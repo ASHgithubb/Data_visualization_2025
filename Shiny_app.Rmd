@@ -1,7 +1,7 @@
 ---
 title: "Data Visualization | Fall 2025 @AU"
 subtitle: "Multivariate Analysis of GSS Data"
-author: "Anne Skamris Holm"
+author: "Anne Skamris Holm and Nour Alsaid"
 date: "`r Sys.Date()`"
 header-includes:
 - \usepackage{fancyhdr}
