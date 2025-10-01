@@ -92,6 +92,7 @@ GSS_ascii %>%
 ```
 
 ```{r}
+# Showing headings and labels
 sort(GSS_metadata[["ColName"]])
 sort(GSS_metadata[["ColLabel"]])
 ```
@@ -162,6 +163,7 @@ df <- df %>%
 head(df)
 ```
 ```{r}
+# Creating df_clean with chosen variables
 df_clean <- df %>%
   select(
     year,
@@ -174,32 +176,70 @@ df_clean <- df %>%
     income_range_max
 )
 
+# Counting NA's in the full data
 data.frame(
   column = names(df_clean),
   na_count = colSums(is.na(df_clean)),
   na_percent = round(colSums(is.na(df_clean)) / nrow(df_clean) * 100, 1)
 )
 
+# Removing NA's
 df_clean <- na.omit(df)
 #df_clean <- df_clean %>%
 #  filter(!is.na(age), !is.na(sex), !is.na(region))
 
+# Creating df_NA consisting of the data removed
+df_NA <- df %>%
+  filter(is.na(age) | is.na(sex) | is.na(region) | is.na(year) | is.na(happiness) | is.na(income_range))
 
+# Counting NA's in df_clean (No NA's)
 data.frame(
   column = names(df_clean),
   na_count = colSums(is.na(df_clean)),
   na_percent = round(colSums(is.na(df_clean)) / nrow(df_clean) * 100, 1)
 )
+
 
 head(df_clean)
 ```
 
 ## Exploring GSS data
 ```{r}
+# Year
 ggplot(df_clean, aes(x = year)) + 
   theme_minimal() + 
-  labs(x = "Income", title = "Income") + 
-  geom_histogram()
+  labs(x = "Year", title = "Counts of responses for all Years with NA's removed") + 
+  geom_histogram(binwidth = 1)
+
+# Age
+ggplot(df_clean, aes(x = age)) + 
+  theme_minimal() + 
+  labs(x = "Age", title = "Counts of responses for Age groups with NA's removed") + 
+  geom_histogram(binwidth = 1)
+
+# Happiness
+ggplot(df_clean, aes(x = happiness, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "Happiness", title = "Counts of responses for Happiness groups with NA's removed") + 
+  geom_bar(position = position_dodge(width = 0.9))
+
+# Income
+ggplot(df_clean, aes(x = income_range, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "Income group", title = "Counts of responses for Income groups with NA's removed") + 
+  geom_bar(position = position_dodge(width = 0.9))
+
+# Region
+ggplot(df_clean, aes(x = region, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "Region", title = "Counts of responses for Regions with NA's removed") + 
+  geom_bar(position = position_dodge(width = 0.9))
+
+# Sex
+ggplot(df_clean, aes(x = sex)) + 
+  theme_minimal() + 
+  labs(x = "Sex", title = "Counts of responses for each Sex with NA's removed") + 
+  geom_bar()
 ```
 
 # Part 2
