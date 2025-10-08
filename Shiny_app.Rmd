@@ -77,17 +77,17 @@ library(foreign)
   }
 
 
-GSS_metadata <- read.dct("data/GSS.dct")
-GSS_ascii <- read.dat("data/GSS.dat", GSS_metadata)
+GSS_metadata <- read.dct("data/exploring_variables/GSS.dct")
+GSS_ascii <- read.dat("data/exploring_variables/GSS.dat", GSS_metadata)
 attr(GSS_ascii, "col.label") <- GSS_metadata[["ColLabel"]]
 GSS <- GSS_ascii
   
 # Save as csv
 GSS %>% 
-  write_csv(file = "data/GSS_data.csv")
+  write_csv(file = "data/exploring_variables/GSS_data.csv")
 
 GSS_ascii %>% 
-  write_csv(file = "data/GSS_data_ascii.csv")
+  write_csv(file = "data/exploring_variables/GSS_data_ascii.csv")
 
 ```
 
@@ -98,7 +98,7 @@ sort(GSS_metadata[["ColLabel"]])
 ```
 ## Preprocessing GSS data
 ```{r}
-df_fresh <-read_csv('data/GSS_data.csv')
+df_fresh <-read_csv('data/exploring_variables/GSS_data.csv')
 
 #Insert row number ('ID') variable to the data frame
 df_fresh <- dplyr::mutate(df_fresh, ID = row_number()) #generates student IDs by row number.
@@ -113,7 +113,11 @@ df <- df_fresh %>%
     age=AGE,
     region=REGION,
     happiness=HAPPY,
-    own_income=RINCOME
+    own_income=RINCOME,
+    educ=EDUC,
+    race=RACE,
+    work=WRKSTAT,
+    marital=MARITAL
 )
 
 df <- df %>%
@@ -130,24 +134,6 @@ df <- df %>%
     happiness = as.character(happiness),
     happiness = recode(happiness, "1" = "Very happy", "2" = "Pretty happy", "3" = "Not too happy", "-98" = "Do not know", "-100" = NA_character_, "-99" = NA_character_, "-97" = NA_character_),
     own_income = as.numeric(own_income),
-    income_range_min = case_when(
-      own_income < 1 ~ NA_real_,
-      own_income %in% 1:4 ~ 0,
-      own_income %in% 5:8 ~ 5000,
-      own_income == 9    ~ 10000,
-      own_income == 10   ~ 15000,
-      own_income == 11   ~ 20000,
-      own_income == 12   ~ 25000
-    ),
-    income_range_max = case_when(
-      own_income < 1 ~ NA_real_,
-      own_income %in% 1:4 ~ 4999,
-      own_income %in% 5:8 ~ 9999,
-      own_income == 9    ~ 14999,
-      own_income == 10   ~ 19999,
-      own_income == 11   ~ 24999,
-      own_income == 12   ~ 99999
-    ),
     income_range = case_when(
       own_income < 1 ~ NA_real_,
       own_income %in% 1:4 ~ 1,
@@ -158,10 +144,19 @@ df <- df %>%
       own_income == 12   ~ 6
     ),
     income_range = as.factor(income_range),
+    race = as.character(race),
+    race = recode(race, "-100" = NA_character_),
+    educ = as.character(educ),
+    educ = recode(educ, "-98" = NA_character_, "-99" = NA_character_),
+    work = as.character(work),
+    work = recode(work, "-97" = NA_character_, "-98" = NA_character_, "-99" = NA_character_),
+    marital = as.character(marital),
+    marital = recode(marital, "-97" = NA_character_, "-98" = NA_character_, "-99" = NA_character_)
   )
 
 head(df)
 ```
+
 ```{r}
 # Creating df_clean with chosen variables
 df_clean <- df %>%
@@ -172,116 +167,287 @@ df_clean <- df %>%
     region,
     happiness,
     income_range,
-    income_range_min,
-    income_range_max
+    educ,
+    race,
+    work,
+    marital
 )
 
 # Counting NA's in the full data
 data.frame(
-  column = names(df_clean),
+  #column = names(df_clean),
   na_count = colSums(is.na(df_clean)),
   na_percent = round(colSums(is.na(df_clean)) / nrow(df_clean) * 100, 1)
+)
+
+# Create simple missingness map
+library(naniar)
+vis_miss(df_clean)
+
+# Creating df_NA consisting of the data removed
+df_NA <- df_clean %>%
+  filter(is.na(age) | is.na(sex) | is.na(region) | is.na(year) | is.na(happiness) | is.na(income_range))
+
+# Looking at filtered out data
+data.frame(
+  na_count = colSums(is.na(df_NA)),
+  na_percent = round(colSums(is.na(df_NA)) / nrow(df_NA) * 100, 1)
 )
 
 # Removing NA's
-df_clean <- na.omit(df)
+df_clean <- na.omit(df_clean)
 #df_clean <- df_clean %>%
 #  filter(!is.na(age), !is.na(sex), !is.na(region))
 
-# Creating df_NA consisting of the data removed
-df_NA <- df %>%
-  filter(is.na(age) | is.na(sex) | is.na(region) | is.na(year) | is.na(happiness) | is.na(income_range))
 
 # Counting NA's in df_clean (No NA's)
 data.frame(
-  column = names(df_clean),
+  #column = names(df_clean),
   na_count = colSums(is.na(df_clean)),
   na_percent = round(colSums(is.na(df_clean)) / nrow(df_clean) * 100, 1)
 )
 
 
-head(df_clean)
 ```
 
 ## Exploring GSS data
 
 ### Distribution of Data
 ```{r}
-# Year
-ggplot(df_clean, aes(x = year)) + 
+#YEAR
+# Year including NA's
+year_w_na <- ggplot(df, aes(x = year)) + 
   theme_minimal() + 
-  labs(x = "Year", title = "Counts of responses for all Years with NA's removed") + 
-  geom_histogram(binwidth = 1)
+  labs(x = "Year", title = "Years with NA's") + 
+  geom_bar(binwidth = 1)+
+  coord_cartesian(ylim = c(0, 4000))  # sets y-axis range
 
-# Age
-ggplot(df_clean, aes(x = age)) + 
+# Year NA's removed
+year_clean <- ggplot(df_clean, aes(x = year)) + 
   theme_minimal() + 
-  labs(x = "Age", title = "Counts of responses for Age groups with NA's removed") + 
-  geom_histogram(binwidth = 1)
+  labs(x = "Year", title = "Years with NA's removed") + 
+  geom_bar(binwidth = 1)+
+  coord_cartesian(ylim = c(0, 4000))  # sets y-axis range
 
-# Happiness
-ggplot(df_clean, aes(x = happiness, fill=sex)) + 
+# Year NA's 
+year_na <- ggplot(df_NA, aes(x = year)) + 
   theme_minimal() + 
-  labs(x = "Happiness", title = "Counts of responses for Happiness groups with NA's removed") + 
-  geom_bar(position = position_dodge(width = 0.9))
+  labs(x = "Year", title = "Year removed responses") + 
+  geom_bar(binwidth = 1)+
+  coord_cartesian(ylim = c(0, 4000))  # sets y-axis range
 
-# Income
-ggplot(df_clean, aes(x = income_range, fill=sex)) + 
+#AGE
+# age including NA's
+age_w_na <- ggplot(df, aes(x = age)) + 
   theme_minimal() + 
-  labs(x = "Income group", title = "Counts of responses for Income groups with NA's removed") + 
-  geom_bar(position = position_dodge(width = 0.9))
+  labs(x = "age", title = "ages with NA's") + 
+  geom_bar(binwidth = 1)+
+  coord_cartesian(ylim = c(0, 4000))  # sets y-axis range
 
-# Region
-ggplot(df_clean, aes(x = region, fill=sex)) + 
+# age NA's removed
+age_clean <- ggplot(df_clean, aes(x = age)) + 
   theme_minimal() + 
-  labs(x = "Region", title = "Counts of responses for Regions with NA's removed") + 
-  geom_bar(position = position_dodge(width = 0.9))
+  labs(x = "age", title = "ages with NA's removed") + 
+  geom_bar(binwidth = 1)+
+  coord_cartesian(ylim = c(0, 4000))  # sets y-axis range
 
-# Sex
-ggplot(df_clean, aes(x = sex)) + 
+# age NA's 
+age_na <- ggplot(df_NA, aes(x = age)) + 
   theme_minimal() + 
-  labs(x = "Sex", title = "Counts of responses for each Sex with NA's removed") + 
-  geom_bar()
+  labs(x = "age", title = "age removed responses") + 
+  geom_bar(binwidth = 1)+
+  coord_cartesian(ylim = c(0, 4000))  # sets y-axis range
+
+#REGION
+# region including NA's
+region_w_na <- ggplot(df, aes(x = region, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "region", title = "region with NA's") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 8000))  # sets y-axis range
+
+# region NA's removed
+region_clean <- ggplot(df_clean, aes(x = region, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "region", title = "region groups with NA's removed") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 8000))  # sets y-axis range
+ 
+# region NA's 
+region_na <- ggplot(df_NA, aes(x = region, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "region", title = "region removed respones") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 8000))  # sets y-axis range
+
+#SEX
+# sex including NA's
+sex_w_na <- ggplot(df, aes(x = sex, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "sex", title = "sex with NA's") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 40000))  # sets y-axis range
+
+# sex NA's removed
+sex_clean <- ggplot(df_clean, aes(x = sex, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "sex", title = "sex groups with NA's removed") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 40000))  # sets y-axis range
+ 
+# sex NA's 
+sex_na <- ggplot(df_NA, aes(x = sex, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "sex", title = "sex removed respones") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 40000))  # sets y-axis range
+
+
+#HAPPINESS
+# Happiness including NA's
+happy_w_na <- ggplot(df, aes(x = happiness, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "Happiness", title = "Happiness with NA's") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
+
+# Happiness NA's removed
+happy_clean <- ggplot(df_clean, aes(x = happiness, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "Happiness", title = "Happiness groups with NA's removed") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
+
+# Happiness NA's 
+happy_na <- ggplot(df_NA, aes(x = happiness, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "Happiness", title = "Happiness removed respones") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
+
+#INCOME
+# income including NA's
+income_w_na <- ggplot(df, aes(x = income_range, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "income", title = "income with NA's") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
+
+# income NA's removed
+income_clean <- ggplot(df_clean, aes(x = income_range, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "income", title = "income groups with NA's removed") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
+ 
+# income NA's 
+income_na <- ggplot(df_NA, aes(x = income_range, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "income", title = "income removed respones") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
+
+#RACE
+# race including NA's
+race_w_na <- ggplot(df, aes(x = race, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "race", title = "race with NA's") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 35000))  # sets y-axis range
+
+# race NA's removed
+race_clean <- ggplot(df_clean, aes(x = race, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "race", title = "race groups with NA's removed") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 35000))  # sets y-axis range
+ 
+# race NA's 
+race_na <- ggplot(df_NA, aes(x = race, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "race", title = "race removed respones") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 35000))  # sets y-axis range
+
+
+#MARITAL
+# marital including NA's
+marital_w_na <- ggplot(df, aes(x = marital, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "marital", title = "marital with NA's") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 21000))  # sets y-axis range
+
+# marital NA's removed
+marital_clean <- ggplot(df_clean, aes(x = marital, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "marital", title = "marital groups with NA's removed") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 21000))  # sets y-axis range
+ 
+# marital NA's 
+marital_na <- ggplot(df_NA, aes(x = marital, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "marital", title = "marital removed respones") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 21000))  # sets y-axis range
+
+#EDUCATION
+# educ including NA's
+educ_w_na <- ggplot(df, aes(x = educ, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "educ", title = "educ with NA's") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 15000))  # sets y-axis range
+
+# educ NA's removed
+educ_clean <- ggplot(df_clean, aes(x = educ, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "educ", title = "educ groups with NA's removed") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 15000))  # sets y-axis range
+ 
+# educ NA's 
+educ_na <- ggplot(df_NA, aes(x = educ, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "educ", title = "educ removed respones") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 15000))  # sets y-axis range
+
+#WORK
+# work including NA's
+work_w_na <- ggplot(df, aes(x = work, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "work", title = "work with NA's") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
+
+# work NA's removed
+work_clean <- ggplot(df_clean, aes(x = work, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "work", title = "work groups with NA's removed") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
+ 
+# work NA's 
+work_na <- ggplot(df_NA, aes(x = work, fill=sex)) + 
+  theme_minimal() + 
+  labs(x = "work", title = "work removed respones") + 
+  geom_bar(position = position_dodge(width = 0.9))+
+  coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
+
+grid.arrange(year_w_na, year_clean, year_na, ncol=2)
+grid.arrange(age_w_na, age_clean, age_na, ncol=2)
+grid.arrange(region_w_na, region_clean, region_na, ncol=2)
+grid.arrange(sex_w_na, sex_clean, sex_na, ncol=2)
+grid.arrange(happy_w_na, happy_clean, happy_na, ncol=2)
+grid.arrange(income_w_na, income_clean, income_na, ncol=2)
+grid.arrange(race_w_na, race_clean, race_na, ncol=2)
+grid.arrange(marital_w_na, marital_clean, marital_na, ncol=2)
+grid.arrange(educ_w_na, educ_clean, educ_na, ncol=2)
+grid.arrange(work_w_na, work_clean, work_na, ncol=2)
 ```
 
-### Exploring removed data
-```{r}
-# Year
-ggplot(df_NA, aes(x = year)) + 
-  theme_minimal() + 
-  labs(x = "Year", title = "Counts of responses for all Years with NA's removed") + 
-  geom_histogram(binwidth = 1)
-
-# Age
-ggplot(df_NA, aes(x = age)) + 
-  theme_minimal() + 
-  labs(x = "Age", title = "Counts of responses for Age groups with NA's removed") + 
-  geom_histogram(binwidth = 1)
-
-# Happiness
-ggplot(df_NA, aes(x = happiness, fill=sex)) + 
-  theme_minimal() + 
-  labs(x = "Happiness", title = "Counts of responses for Happiness groups with NA's removed") + 
-  geom_bar(position = position_dodge(width = 0.9))
-
-# Income
-ggplot(df_NA, aes(x = income_range, fill=sex)) + 
-  theme_minimal() + 
-  labs(x = "Income group", title = "Counts of responses for Income groups with NA's removed") + 
-  geom_bar(position = position_dodge(width = 0.9))
-
-# Region
-ggplot(df_NA, aes(x = region, fill=sex)) + 
-  theme_minimal() + 
-  labs(x = "Region", title = "Counts of responses for Regions with NA's removed") + 
-  geom_bar(position = position_dodge(width = 0.9))
-
-# Sex
-ggplot(df_NA, aes(x = sex)) + 
-  theme_minimal() + 
-  labs(x = "Sex", title = "Counts of responses for each Sex with NA's removed") + 
-  geom_bar()
-```
 
 ### Variables across time
 ```{r}
