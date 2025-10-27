@@ -1,31 +1,4 @@
----
-title: "Data Visualization | Fall 2025 @AU"
-subtitle: "Multivariate Analysis of GSS Data"
-author: "Anne Skamris Holm"
-date: "`r Sys.Date()`"
-header-includes:
-- \usepackage{fancyhdr}
-output:
-  pdf_document:
-    latex_engine: xelatex
-    toc: true #Created table from headings
-    number_sections: yes
-  html_document:
-    toc: yes
-    number_sections: yes
-    toc_float: yes
-    theme: united
-    highlight: espresso
-  #always_allow_html: true
-geometry: margin=1in
----
-
-\pagestyle{fancy}
-\fancyhead[HL]{Data Visualization} 
-\fancyhead[HR]{Anne Skamris Holm and Nour Alsaid}
-
-\newpage
-```{r setup, include=FALSE}
+## ----setup, include=FALSE---------------------------------------------------------------------------------------------------
 # include = F results in coding chunks in doc not being printed
 knitr::opts_chunk$set(echo = FALSE, include = TRUE, message = FALSE, warning = FALSE)
 
@@ -39,13 +12,9 @@ getwd()
 # Loading packages
 pacman::p_load(tidyverse, pastecs, gridExtra, ggplot2, tinytex, shiny, bslib, plotly, webshot2)
 
-```
 
-# Part 1
 
-## Importing GSS data
-
-```{r converting to CSV}
+## ----converting to CSV------------------------------------------------------------------------------------------------------
 library(foreign)
   read.dct <- function(dct, labels.included = "yes") {
       temp <- readLines(dct)
@@ -89,15 +58,15 @@ GSS %>%
 GSS_ascii %>% 
   write_csv(file = "data/exploring_variables/GSS_data_ascii.csv")
 
-```
 
-```{r}
+
+## ---------------------------------------------------------------------------------------------------------------------------
 # Showing headings and labels
 sort(GSS_metadata[["ColName"]])
 sort(GSS_metadata[["ColLabel"]])
-```
-## Preprocessing GSS data
-```{r}
+
+
+## ---------------------------------------------------------------------------------------------------------------------------
 df_fresh <-read_csv('data/exploring_variables/GSS_data.csv')
 
 #Insert row number ('ID') variable to the data frame
@@ -155,9 +124,9 @@ df <- df %>%
   )
 
 head(df)
-```
 
-```{r}
+
+## ---------------------------------------------------------------------------------------------------------------------------
 # Creating df_clean with chosen variables
 df_clean <- df %>%
   select(
@@ -208,12 +177,9 @@ data.frame(
 )
 
 
-```
 
-## Exploring GSS data
 
-### Distribution of Data
-```{r}
+## ---------------------------------------------------------------------------------------------------------------------------
 #YEAR
 # Year including NA's
 year_w_na <- ggplot(df, aes(x = year)) + 
@@ -446,11 +412,9 @@ grid.arrange(race_w_na, race_clean, race_na, ncol=2)
 grid.arrange(marital_w_na, marital_clean, marital_na, ncol=2)
 grid.arrange(educ_w_na, educ_clean, educ_na, ncol=2)
 grid.arrange(work_w_na, work_clean, work_na, ncol=2)
-```
 
 
-### Variables across time
-```{r}
+## ---------------------------------------------------------------------------------------------------------------------------
 # Happiness across Time
 library(dplyr)
 library(ggplot2)
@@ -490,9 +454,9 @@ ggplot(df_perc, aes(x = year, y = perc, color = happiness, group = happiness)) +
     color = "Happiness",
     title = "Happiness Distribution across Time"
   )
-```
 
-```{r}
+
+## ---------------------------------------------------------------------------------------------------------------------------
 # Income across Time
 library(dplyr)
 library(ggplot2)
@@ -532,9 +496,9 @@ ggplot(df_perc, aes(x = year, y = perc, color = income_range, group = income_ran
     color = "Income",
     title = "Income Distribution across Time"
   )
-```
-### Variables across region
-```{r}
+
+
+## ---------------------------------------------------------------------------------------------------------------------------
 # Happiness
 ggplot(df_clean, aes(x = interaction(happiness, region), fill = sex)) + 
   geom_bar(position = "stack") +
@@ -565,15 +529,11 @@ ggplot(df_clean, aes(x = interaction(income_range, region), fill = sex)) +
 
 
 
-```
 
 
-
-# Part 2
-## Building the shiny app
-```{r}
+## ---------------------------------------------------------------------------------------------------------------------------
 library(shiny)
 # runApp("data_vis_shiny_app") #Shows only the app and no code
 
 #runApp("data_vis_shiny_app", display.mode = "showcase") #Shows the code as well and highlights chinks with interaction
-```
+
