@@ -43,7 +43,7 @@ pacman::p_load(tidyverse, pastecs, gridExtra, ggplot2, tinytex, shiny, bslib, pl
 
 # Part 1
 
-## Importing and preprocessing GSS data
+## Importing GSS data
 
 ```{r converting to CSV}
 library(foreign)
@@ -95,8 +95,7 @@ GSS_ascii %>%
 sort(GSS_metadata[["ColName"]])
 sort(GSS_metadata[["ColLabel"]])
 ```
-
-
+## Preprocessing GSS data
 ```{r}
 df_fresh <-read_csv('data/GSS_data.csv')
 
@@ -109,7 +108,7 @@ df <- df_fresh %>%
     ID,
     GSS_ID=ID_,
     year=YEAR,
-    sex=SEX,
+    sex_num=SEX,
     age=AGE,
     region=REGION,
     happiness=HAPPY,
@@ -121,13 +120,90 @@ df <- df %>%
     across(where(is.character), as.factor),
     ID = as.factor(ID),
     year = as.numeric(year),
-    sex = as.factor(sex),
-    sex = recode(sex, "1" = "M", "2" = "F")
+    age = as.numeric(age),
+    age= case_when(age < 0 ~ NA_real_, age>0~age),
+    sex_num = as.factor(sex_num),
+    sex = case_when(sex_num=="1"~"M", sex_num=="2"~"F", TRUE ~ NA_character_),
+    region = as.factor(region),
+    region = recode(region, "1" = "New England", "2" = "Middle Atlantic",  "3" = "East North Central",  "4" = "West North Central", "5" = "South Atlantic",  "6" = "East South Central",  "7" = "West South Central",  "8" = "Mountain",  "9" = "Pacific"),
+    happiness = as.character(happiness),
+    happiness = recode(happiness, "1" = "Very happy", "2" = "Pretty happy", "3" = "Not too happy", "-98" = "Do not know", "-100" = NA_character_, "-99" = NA_character_, "-97" = NA_character_),
+    own_income = as.numeric(own_income),
+    income_range_min = case_when(
+      own_income < 1 ~ NA_real_,
+      own_income %in% 1:4 ~ 0,
+      own_income %in% 5:8 ~ 5000,
+      own_income == 9    ~ 10000,
+      own_income == 10   ~ 15000,
+      own_income == 11   ~ 20000,
+      own_income == 12   ~ 25000
+    ),
+    income_range_max = case_when(
+      own_income < 1 ~ NA_real_,
+      own_income %in% 1:4 ~ 4999,
+      own_income %in% 5:8 ~ 9999,
+      own_income == 9    ~ 14999,
+      own_income == 10   ~ 19999,
+      own_income == 11   ~ 24999,
+      own_income == 12   ~ 99999
+    ),
+    income_range = case_when(
+      own_income < 1 ~ NA_real_,
+      own_income %in% 1:4 ~ 1,
+      own_income %in% 5:8 ~ 2,
+      own_income == 9    ~ 3,
+      own_income == 10   ~ 4,
+      own_income == 11   ~ 5,
+      own_income == 12   ~ 6
+    ),
+    income_range = as.factor(income_range),
   )
 
 head(df)
 ```
+```{r}
+df_clean <- df %>%
+  select(
+    year,
+    sex,
+    age,
+    region,
+    happiness,
+    income_range,
+    income_range_min,
+    income_range_max
+)
 
+data.frame(
+  column = names(df_clean),
+  na_count = colSums(is.na(df_clean)),
+  na_percent = round(colSums(is.na(df_clean)) / nrow(df_clean) * 100, 1)
+)
+
+df_clean <- na.omit(df)
+#df_clean <- df_clean %>%
+#  filter(!is.na(age), !is.na(sex), !is.na(region))
+
+
+data.frame(
+  column = names(df_clean),
+  na_count = colSums(is.na(df_clean)),
+  na_percent = round(colSums(is.na(df_clean)) / nrow(df_clean) * 100, 1)
+)
+
+head(df_clean)
+```
+
+## Exploring GSS data
+```{r}
+ggplot(df_clean, aes(x = year)) + 
+  theme_minimal() + 
+  labs(x = "Income", title = "Income") + 
+  geom_histogram()
+```
+
+# Part 2
+## Building the shiny app
 ```{r}
 library(shiny)
 # runApp("data_vis_shiny_app") #Shows only the app and no code
