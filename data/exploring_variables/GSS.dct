@@ -1,0 +1,16 @@
+
+infile dictionary {
+
+_column(1) 	 numeric 		 BALLOT 		 %20f 		 "ballot used for interview" 
+_column(6) 	 numeric 		 WRKSTAT 		 %20f 		 "labor force status" 
+_column(10) 	 numeric 		 MARITAL 		 %20f 		 "marital status" 
+_column(14) 	 numeric 		 AGE 		 %20f 		 "age of respondent" 
+_column(19) 	 numeric 		 EDUC 		 %20f 		 "highest year of school completed" 
+_column(23) 	 numeric 		 SEX 		 %20f 		 "respondents sex" 
+_column(28) 	 numeric 		 RACE 		 %20f 		 "race of respondent" 
+_column(33) 	 numeric 		 RINCOME 		 %20f 		 "respondents income" 
+_column(38) 	 numeric 		 REGION 		 %20f 		 "region of interview" 
+_column(40) 	 numeric 		 HAPPY 		 %20f 		 "general happiness" 
+_column(45) 	 numeric 		 ID_ 		 %20f 		 "Respondent id number" 
+_column(50) 	 numeric 		 YEAR 		 %20f 		 "GSS year for this respondent" 
+}
