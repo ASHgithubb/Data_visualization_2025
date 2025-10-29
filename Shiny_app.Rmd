@@ -232,7 +232,7 @@ df_clean <- df %>%
     age,
     region,
     happiness,
-    income_range,
+    #income_range,
     educ,
     race,
     work,
@@ -252,7 +252,7 @@ vis_miss(df_clean)
 
 # Creating df_NA consisting of the data removed
 df_NA <- df_clean %>%
-  filter(is.na(age) | is.na(sex) | is.na(region) | is.na(year) | is.na(happiness) | is.na(income_range))
+  filter(is.na(age) | is.na(sex) | is.na(region) | is.na(year) | is.na(happiness))
 
 # Looking at filtered out data
 data.frame(
@@ -391,27 +391,27 @@ happy_na <- ggplot(df_NA, aes(x = happiness, fill=sex)) +
   geom_bar(position = position_dodge(width = 0.9))+
   coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
 
-#INCOME
-# income including NA's
-income_w_na <- ggplot(df, aes(x = income_range, fill=sex)) + 
-  theme_minimal() + 
-  labs(x = "income", title = "income with NA's") + 
-  geom_bar(position = position_dodge(width = 0.9))+
-  coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
-
-# income NA's removed
-income_clean <- ggplot(df_clean, aes(x = income_range, fill=sex)) + 
-  theme_minimal() + 
-  labs(x = "income", title = "income groups with NA's removed") + 
-  geom_bar(position = position_dodge(width = 0.9))+
-  coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
- 
-# income NA's 
-income_na <- ggplot(df_NA, aes(x = income_range, fill=sex)) + 
-  theme_minimal() + 
-  labs(x = "income", title = "income removed respones") + 
-  geom_bar(position = position_dodge(width = 0.9))+
-  coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
+# #INCOME
+# # income including NA's
+# income_w_na <- ggplot(df, aes(x = income_range, fill=sex)) + 
+#   theme_minimal() + 
+#   labs(x = "income", title = "income with NA's") + 
+#   geom_bar(position = position_dodge(width = 0.9))+
+#   coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
+# 
+# # income NA's removed
+# income_clean <- ggplot(df_clean, aes(x = income_range, fill=sex)) + 
+#   theme_minimal() + 
+#   labs(x = "income", title = "income groups with NA's removed") + 
+#   geom_bar(position = position_dodge(width = 0.9))+
+#   coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
+#  
+# # income NA's 
+# income_na <- ggplot(df_NA, aes(x = income_range, fill=sex)) + 
+#   theme_minimal() + 
+#   labs(x = "income", title = "income removed respones") + 
+#   geom_bar(position = position_dodge(width = 0.9))+
+#   coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
 
 #RACE
 # race including NA's
@@ -507,7 +507,7 @@ grid.arrange(age_w_na, age_clean, age_na, ncol=2)
 grid.arrange(region_w_na, region_clean, region_na, ncol=2)
 grid.arrange(sex_w_na, sex_clean, sex_na, ncol=2)
 grid.arrange(happy_w_na, happy_clean, happy_na, ncol=2)
-grid.arrange(income_w_na, income_clean, income_na, ncol=2)
+#grid.arrange(income_w_na, income_clean, income_na, ncol=2)
 grid.arrange(race_w_na, race_clean, race_na, ncol=2)
 grid.arrange(marital_w_na, marital_clean, marital_na, ncol=2)
 grid.arrange(educ_w_na, educ_clean, educ_na, ncol=2)
@@ -521,32 +521,14 @@ grid.arrange(work_w_na, work_clean, work_na, ncol=2)
 library(dplyr)
 library(ggplot2)
 
-# count number of responses per year × happiness
-df_counts <- df_clean %>%
-  group_by(year, happiness) %>%
-  summarise(count = n(), .groups = "drop")
-
-# connected scatterplot
-ggplot(df_counts, aes(x = year, y = count, color = happiness, group = happiness)) +
-  geom_point(size = 2) +
-  geom_line() +
-  theme_minimal() +
-  labs(
-    x = "Year",
-    y = "Number of Responses",
-    color = "Happiness",
-    title = "Happiness Counts across Time"
-  )
-
-# percentage of each happiness group per year
-df_perc <- df_clean %>%
-  group_by(year, happiness) %>%
-  summarise(count = n(), .groups = "drop") %>%
-  group_by(year) %>%
-  mutate(perc = count / sum(count) * 100)
-
-# connected scatterplot
-ggplot(df_perc, aes(x = year, y = perc, color = happiness, group = happiness)) +
+ggplot(
+  df_clean %>%
+    group_by(year, happiness) %>%
+    summarise(count = n(), .groups = "drop") %>%
+    group_by(year) %>%
+    mutate(perc = count / sum(count) * 100),
+  aes(x = year, y = perc, color = happiness, group = happiness)
+) +
   geom_point(size = 2) +
   geom_line() +
   theme_minimal() +
@@ -556,48 +538,49 @@ ggplot(df_perc, aes(x = year, y = perc, color = happiness, group = happiness)) +
     color = "Happiness",
     title = "Happiness Distribution across Time"
   )
+
 ```
 
 ```{r}
-# Income across Time
-library(dplyr)
-library(ggplot2)
-
-# count number of responses per year × income
-df_counts <- df_clean %>%
-  group_by(year, income_range) %>%
-  summarise(count = n(), .groups = "drop")
-
-# connected scatterplot
-ggplot(df_counts, aes(x = year, y = count, color = income_range, group = income_range)) +
-  geom_point(size = 2) +
-  geom_line() +
-  theme_minimal() +
-  labs(
-    x = "Year",
-    y = "Number of Responses",
-    color = "Income",
-    title = "Income Counts across Time"
-  )
-
-# percentage of each income group per year
-df_perc <- df_clean %>%
-  group_by(year, income_range) %>%
-  summarise(count = n(), .groups = "drop") %>%
-  group_by(year) %>%
-  mutate(perc = count / sum(count) * 100)
-
-# connected scatterplot
-ggplot(df_perc, aes(x = year, y = perc, color = income_range, group = income_range)) +
-  geom_point(size = 2) +
-  geom_line() +
-  theme_minimal() +
-  labs(
-    x = "Year",
-    y = "Percentage of Responses",
-    color = "Income",
-    title = "Income Distribution across Time"
-  )
+# # Income across Time
+# library(dplyr)
+# library(ggplot2)
+# 
+# # count number of responses per year × income
+# df_counts <- df_clean %>%
+#   group_by(year, income_range) %>%
+#   summarise(count = n(), .groups = "drop")
+# 
+# # connected scatterplot
+# ggplot(df_counts, aes(x = year, y = count, color = income_range, group = income_range)) +
+#   geom_point(size = 2) +
+#   geom_line() +
+#   theme_minimal() +
+#   labs(
+#     x = "Year",
+#     y = "Number of Responses",
+#     color = "Income",
+#     title = "Income Counts across Time"
+#   )
+# 
+# # percentage of each income group per year
+# df_perc <- df_clean %>%
+#   group_by(year, income_range) %>%
+#   summarise(count = n(), .groups = "drop") %>%
+#   group_by(year) %>%
+#   mutate(perc = count / sum(count) * 100)
+# 
+# # connected scatterplot
+# ggplot(df_perc, aes(x = year, y = perc, color = income_range, group = income_range)) +
+#   geom_point(size = 2) +
+#   geom_line() +
+#   theme_minimal() +
+#   labs(
+#     x = "Year",
+#     y = "Percentage of Responses",
+#     color = "Income",
+#     title = "Income Distribution across Time"
+#   )
 ```
 ### Variables across region
 ```{r}
@@ -615,19 +598,19 @@ ggplot(df_clean, aes(x = interaction(happiness, region), fill = sex)) +
     axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1) # rotate labels
   )
 
-# Income
-ggplot(df_clean, aes(x = interaction(income_range, region), fill = sex)) + 
-  geom_bar(position = "stack") +
-  theme_minimal() +
-  labs(
-    x = "Income and Region",
-    y = "Count",
-    fill = "Sex",
-    title = "Counts of responses for Income by Regions and Sex"
-  )+
-  theme(
-    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1) # rotate labels
-  )
+# # Income
+# ggplot(df_clean, aes(x = interaction(income_range, region), fill = sex)) + 
+#   geom_bar(position = "stack") +
+#   theme_minimal() +
+#   labs(
+#     x = "Income and Region",
+#     y = "Count",
+#     fill = "Sex",
+#     title = "Counts of responses for Income by Regions and Sex"
+#   )+
+#   theme(
+#     axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1) # rotate labels
+#   )
 
 
 

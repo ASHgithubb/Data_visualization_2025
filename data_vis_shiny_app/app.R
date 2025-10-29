@@ -55,7 +55,6 @@ ui <- page_sidebar(
           div(
             plotOutput("bar_educ", height = "100%", width = "100%"),
             style = "
-              background-color: #cceeff;
               border: 1px solid #00000040;
               width: 200px;
               height: 200px;
@@ -68,7 +67,6 @@ ui <- page_sidebar(
           div(
             plotOutput("bar_happy", height = "100%", width = "100%"),
             style = "
-              background-color: #cceeff;
               border: 1px solid #00000040;
               width: 200px;
               height: 200px;
