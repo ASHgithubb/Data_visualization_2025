@@ -2,17 +2,8 @@ library(shiny)
 library(bslib)
 library(ggplot2)
 
-# ---- Load data from Rmd ----
-
-# For demonstration purposes, let's create an example df_clean
-set.seed(123)
-df_clean <- data.frame(
-  happiness = sample(1:10, 100, replace = TRUE),
-  region = sample(c("North", "South", "East", "West"), 100, replace = TRUE),
-  sex = sample(c("Male", "Female"), 100, replace = TRUE),
-  own_income = sample(c("Low", "Medium", "High"), 100, replace = TRUE),
-  income_range = sample(c("<20k", "20k-50k", "50k-100k", ">100k"), 100, replace = TRUE)
-)
+# ---- Load Data ----
+data_clean <- read.csv("df_clean.csv", stringsAsFactors = FALSE)
 
 
 # Define UI ----
@@ -62,7 +53,7 @@ ui <- page_sidebar(
           ",
           # Box 1 (contains bar chart)
           div(
-            plotOutput("bar_region", height = "100%", width = "100%"),
+            plotOutput("bar_educ", height = "100%", width = "100%"),
             style = "
               background-color: #cceeff;
               border: 1px solid #00000040;
@@ -73,7 +64,20 @@ ui <- page_sidebar(
               align-items: center;
             "
           ),
-          lapply(2:5, function(i) {
+          # Box 2 (contains bar chart)
+          div(
+            plotOutput("bar_happy", height = "100%", width = "100%"),
+            style = "
+              background-color: #cceeff;
+              border: 1px solid #00000040;
+              width: 200px;
+              height: 200px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            "
+          ),
+          lapply(3:5, function(i) {
             div(
               i,
               style = "
@@ -141,21 +145,28 @@ ui <- page_sidebar(
     )
   )
 )
+
 # 'page_navbar' creates a multi-page user interface that includes a navigation bar
 
 # Define server logic ----
 server <- function(input, output) {
   # Bar chart for Box 1
-  output$bar_region <- renderPlot({
+  output$bar_educ <- renderPlot({
     req(df_clean)
-    ggplot(df_clean, aes(x = region)) +
-      geom_bar(fill = "#2c7fb8") +
-      theme_minimal(base_size = 12) +
-      labs(title = "Count by Region", x = "Region", y = "Count") +
-      theme(
-        plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
-        axis.text.x = element_text(angle = 45, hjust = 1)
-      )
+    ggplot(df_clean, aes(x = educ, fill=sex)) + 
+      theme_minimal() + 
+      labs(x = "educ", title = "educ groups with NA's removed") + 
+      geom_bar(position = position_dodge(width = 0.9))+
+      coord_cartesian(ylim = c(0, 15000))  # sets y-axis range
+  })
+  # Bar chart for Box 2
+  output$bar_happy <- renderPlot({
+    req(df_clean)
+    happy_clean <- ggplot(df_clean, aes(x = happiness, fill=sex)) + 
+      theme_minimal() + 
+      labs(x = "Happiness", title = "Happiness groups with NA's removed") + 
+      geom_bar(position = position_dodge(width = 0.9))+
+      coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
   })
 }
 

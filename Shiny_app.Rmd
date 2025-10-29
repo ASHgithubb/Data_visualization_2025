@@ -207,7 +207,7 @@ data.frame(
   na_percent = round(colSums(is.na(df_clean)) / nrow(df_clean) * 100, 1)
 )
 
-
+write.csv(df_clean, "data_vis_shiny_app/df_clean.csv", row.names = FALSE)
 ```
 
 ## Exploring GSS data
