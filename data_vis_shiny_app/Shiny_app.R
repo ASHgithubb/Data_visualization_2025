@@ -1,31 +1,4 @@
----
-title: "Data Visualization | Fall 2025 @AU"
-subtitle: "Multivariate Analysis of GSS Data"
-author: "Anne Skamris Holm and Nour Alsaid"
-date: "`r Sys.Date()`"
-header-includes:
-- \usepackage{fancyhdr}
-output:
-  pdf_document:
-    latex_engine: xelatex
-    toc: true #Created table from headings
-    number_sections: yes
-  html_document:
-    toc: yes
-    number_sections: yes
-    toc_float: yes
-    theme: united
-    highlight: espresso
-  #always_allow_html: true
-geometry: margin=1in
----
-
-\pagestyle{fancy}
-\fancyhead[HL]{Data Visualization} 
-\fancyhead[HR]{Anne Skamris Holm and Nour Alsaid}
-
-\newpage
-```{r setup, include=FALSE}
+## ----setup, include=FALSE---------------------------------------------------------------------------------------------------
 # include = F results in coding chunks in doc not being printed
 knitr::opts_chunk$set(echo = FALSE, include = TRUE, message = FALSE, warning = FALSE)
 
@@ -39,13 +12,9 @@ getwd()
 # Loading packages
 pacman::p_load(tidyverse, pastecs, gridExtra, ggplot2, tinytex, shiny, bslib, plotly, webshot2)
 
-```
 
-# Part 1
 
-## Importing GSS data
-
-```{r converting to CSV}
+## ----converting to CSV------------------------------------------------------------------------------------------------------
 library(foreign)
   read.dct <- function(dct, labels.included = "yes") {
       temp <- readLines(dct)
@@ -89,15 +58,15 @@ GSS %>%
 GSS_ascii %>% 
   write_csv(file = "data/exploring_variables/GSS_data_ascii.csv")
 
-```
 
-```{r}
+
+## ---------------------------------------------------------------------------------------------------------------------------
 # Showing headings and labels
 sort(GSS_metadata[["ColName"]])
 sort(GSS_metadata[["ColLabel"]])
-```
-## Preprocessing GSS data
-```{r}
+
+
+## ---------------------------------------------------------------------------------------------------------------------------
 df_fresh <-read_csv('data/exploring_variables/GSS_data.csv')
 
 #Insert row number ('ID') variable to the data frame
@@ -134,27 +103,6 @@ df <- df %>%
     happiness = as.character(happiness),
     happiness = recode(happiness, "1" = "Very happy", "2" = "Pretty happy", "3" = "Not too happy", "-98" = "Do not know", "-100" = NA_character_, "-99" = NA_character_, "-97" = NA_character_),
     own_income = as.numeric(own_income),
-<<<<<<< HEAD
-    income_range_min = case_when(
-      own_income < 1 ~ NA_real_,
-      own_income %in% 1:4 ~ 0,
-      own_income %in% 5:8 ~ 5000,
-      own_income == 9    ~ 10000,
-      own_income == 10   ~ 15000,
-      own_income == 11   ~ 20000,
-      own_income == 12   ~ 25000
-    ),
-    income_range_max = case_when(
-      own_income < 1 ~ NA_real_,
-      own_income %in% 1:4 ~ 4999,
-      own_income %in% 5:8 ~ 9999,
-      own_income == 9    ~ 14999,
-      own_income == 10   ~ 19999,
-      own_income == 11   ~ 24999,
-      own_income == 12   ~ 99999
-    ),
-=======
->>>>>>> f70e6002455f3468a43b603fac6dbb2330a99ed7
     income_range = case_when(
       own_income < 1 ~ NA_real_,
       own_income %in% 1:4 ~ 1,
@@ -165,8 +113,6 @@ df <- df %>%
       own_income == 12   ~ 6
     ),
     income_range = as.factor(income_range),
-<<<<<<< HEAD
-=======
     race = as.character(race),
     race = recode(race, "-100" = NA_character_),
     educ = as.character(educ),
@@ -175,55 +121,12 @@ df <- df %>%
     work = recode(work, "-97" = NA_character_, "-98" = NA_character_, "-99" = NA_character_),
     marital = as.character(marital),
     marital = recode(marital, "-97" = NA_character_, "-98" = NA_character_, "-99" = NA_character_)
->>>>>>> f70e6002455f3468a43b603fac6dbb2330a99ed7
   )
 
 head(df)
-```
-```{r}
-df_clean <- df %>%
-  select(
-    year,
-    sex,
-    age,
-    region,
-    happiness,
-    income_range,
-    income_range_min,
-    income_range_max
-)
-
-data.frame(
-  column = names(df_clean),
-  na_count = colSums(is.na(df_clean)),
-  na_percent = round(colSums(is.na(df_clean)) / nrow(df_clean) * 100, 1)
-)
-
-df_clean <- na.omit(df)
-#df_clean <- df_clean %>%
-#  filter(!is.na(age), !is.na(sex), !is.na(region))
 
 
-data.frame(
-  column = names(df_clean),
-  na_count = colSums(is.na(df_clean)),
-  na_percent = round(colSums(is.na(df_clean)) / nrow(df_clean) * 100, 1)
-)
-
-head(df_clean)
-```
-
-## Exploring GSS data
-```{r}
-ggplot(df_clean, aes(x = year)) + 
-  theme_minimal() + 
-  labs(x = "Income", title = "Income") + 
-  geom_histogram()
-```
-
-# Part 2
-## Building the shiny app
-```{r}
+## ---------------------------------------------------------------------------------------------------------------------------
 # Creating df_clean with chosen variables
 df_clean <- df %>%
   select(
@@ -274,12 +177,9 @@ data.frame(
 )
 
 
-```
 
-## Exploring GSS data
 
-### Distribution of Data
-```{r}
+## ---------------------------------------------------------------------------------------------------------------------------
 #YEAR
 # Year including NA's
 year_w_na <- ggplot(df, aes(x = year)) + 
@@ -512,11 +412,9 @@ grid.arrange(race_w_na, race_clean, race_na, ncol=2)
 grid.arrange(marital_w_na, marital_clean, marital_na, ncol=2)
 grid.arrange(educ_w_na, educ_clean, educ_na, ncol=2)
 grid.arrange(work_w_na, work_clean, work_na, ncol=2)
-```
 
 
-### Variables across time
-```{r}
+## ---------------------------------------------------------------------------------------------------------------------------
 # Happiness across Time
 library(dplyr)
 library(ggplot2)
@@ -556,9 +454,9 @@ ggplot(df_perc, aes(x = year, y = perc, color = happiness, group = happiness)) +
     color = "Happiness",
     title = "Happiness Distribution across Time"
   )
-```
 
-```{r}
+
+## ---------------------------------------------------------------------------------------------------------------------------
 # Income across Time
 library(dplyr)
 library(ggplot2)
@@ -598,9 +496,9 @@ ggplot(df_perc, aes(x = year, y = perc, color = income_range, group = income_ran
     color = "Income",
     title = "Income Distribution across Time"
   )
-```
-### Variables across region
-```{r}
+
+
+## ---------------------------------------------------------------------------------------------------------------------------
 # Happiness
 ggplot(df_clean, aes(x = interaction(happiness, region), fill = sex)) + 
   geom_bar(position = "stack") +
@@ -631,15 +529,11 @@ ggplot(df_clean, aes(x = interaction(income_range, region), fill = sex)) +
 
 
 
-```
 
 
-
-# Part 2
-## Building the shiny app
-```{r}
+## ---------------------------------------------------------------------------------------------------------------------------
 library(shiny)
 # runApp("data_vis_shiny_app") #Shows only the app and no code
 
 #runApp("data_vis_shiny_app", display.mode = "showcase") #Shows the code as well and highlights chinks with interaction
-```
+
