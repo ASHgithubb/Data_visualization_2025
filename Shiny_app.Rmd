@@ -449,6 +449,24 @@ grid.arrange(work_w_na, work_clean, work_na, ncol=2)
 ```
 
 
+### Variable distributions percentage
+```{r}
+# happiness 
+df_clean %>%
+  group_by(sex, happiness) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  group_by(sex) %>%                        # calculate percentages within each sex
+  mutate(perc = count / sum(count) * 100) %>%
+  
+  ggplot(aes(x = happiness, y = perc, fill = sex)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.9)) +
+  theme_minimal() +
+  labs(x = "Happiness", y = "Percentage", title = "Happiness distribution") +
+  scale_y_continuous(limits = c(0, 100))
+
+```
+
+
 ### Variables across time
 ```{r}
 # Happiness across Time
@@ -475,48 +493,7 @@ ggplot(
 
 ```
 
-```{r}
-# # Income across Time
-# library(dplyr)
-# library(ggplot2)
-# 
-# # count number of responses per year × income
-# df_counts <- df_clean %>%
-#   group_by(year, income_range) %>%
-#   summarise(count = n(), .groups = "drop")
-# 
-# # connected scatterplot
-# ggplot(df_counts, aes(x = year, y = count, color = income_range, group = income_range)) +
-#   geom_point(size = 2) +
-#   geom_line() +
-#   theme_minimal() +
-#   labs(
-#     x = "Year",
-#     y = "Number of Responses",
-#     color = "Income",
-#     title = "Income Counts across Time"
-#   )
-# 
-# # percentage of each income group per year
-# df_perc <- df_clean %>%
-#   group_by(year, income_range) %>%
-#   summarise(count = n(), .groups = "drop") %>%
-#   group_by(year) %>%
-#   mutate(perc = count / sum(count) * 100)
-# 
-# # connected scatterplot
-# ggplot(df_perc, aes(x = year, y = perc, color = income_range, group = income_range)) +
-#   geom_point(size = 2) +
-#   geom_line() +
-#   theme_minimal() +
-#   labs(
-#     x = "Year",
-#     y = "Percentage of Responses",
-#     color = "Income",
-#     title = "Income Distribution across Time"
-#   )
-```
-### Variables across region
+`### Variables across region
 ```{r}
 # Happiness
 ggplot(df_clean, aes(x = interaction(happiness, region), fill = sex)) + 
@@ -546,6 +523,84 @@ ggplot(df_clean, aes(x = interaction(happiness, region), fill = sex)) +
 #     axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1) # rotate labels
 #   )
 
+
+
+```
+```{r}
+#Map
+library(usmap) 
+#includes: .east_north_central, .east_south_central, .midwest_region, .mid_atlantic, .mountain, .new_england, .northeast_region, .north_central_region, .pacific, .south_atlantic, .south_region, .west_north_central, .west_region, .west_south_central
+
+# Define mapping of regions to state abbreviations
+us_regions <- list(
+  "New England" = c("CT", "ME", "MA", "NH", "RI", "VT"),
+  "Middle Atlantic" = c("NJ", "NY", "PA"),
+  "East North Central" = c("IL", "IN", "MI", "OH", "WI"),
+  "West North Central" = c("IA", "KS", "MN", "MO", "NE", "ND", "SD"),
+  "South Atlantic" = c("DE", "DC", "FL", "GA", "MD", "NC", "SC", "VA", "WV"),
+  "East South Central" = c("AL", "KY", "MS", "TN"),
+  "West South Central" = c("AR", "LA", "OK", "TX"),
+  "Mountain" = c("AZ", "CO", "ID", "MT", "NV", "NM", "UT", "WY"),
+  "Pacific" = c("AK", "CA", "HI", "OR", "WA")
+)
+
+# Add 'states' column based on 'region'
+df_clean <- df_clean %>%
+  mutate(state = sapply(region, function(r) {
+    if (r %in% names(us_regions)) {
+      paste(us_regions[[r]], collapse = ", ")
+    } else {
+      NA
+    }
+  }))
+
+# Convert the list to a tidy dataframe
+region_df <- tibble(
+  region = rep(names(us_regions), lengths(us_regions)),
+  state = unlist(us_regions)
+)
+
+# Assign one unique color per region
+region_colors <- c(
+  "New England" = "#6BAED6",
+  "Middle Atlantic" = "#FD8D3C",
+  "East North Central" = "#31A354",
+  "West North Central" = "#756BB1",
+  "South Atlantic" = "#E6550D",
+  "East South Central" = "#636363",
+  "West South Central" = "#9ECAE1",
+  "Mountain" = "#74C476",
+  "Pacific" = "#E377C2"
+)
+
+# Add the color column
+region_df <- region_df %>%
+  mutate(color = region_colors[region])
+
+write.csv(region_df, "data_vis_shiny_app/df_regions.csv", row.names = FALSE)
+
+
+# --- Plot each region in a unique color ---
+plot_usmap(data = region_df, regions = "state", values = "region", color = "black") +
+  scale_fill_manual(
+    name = "Region",
+    values = c(
+      "New England" = "#6BAED6",
+      "Middle Atlantic" = "#FD8D3C",
+      "East North Central" = "#31A354",
+      "West North Central" = "#756BB1",
+      "South Atlantic" = "#E6550D",
+      "East South Central" = "#636363",
+      "West South Central" = "#9ECAE1",
+      "Mountain" = "#74C476",
+      "Pacific" = "#E377C2"
+    )
+  ) +
+  labs(
+    title = "U.S. Regions by State",
+    subtitle = "Each region colored uniquely"
+  ) +
+  theme(legend.position = "right")
 
 
 ```
