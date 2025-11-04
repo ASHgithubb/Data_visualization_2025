@@ -134,7 +134,6 @@ df <- df %>%
     happiness = as.character(happiness),
     happiness = recode(happiness, "1" = "Very happy", "2" = "Pretty happy", "3" = "Not too happy", "-98" = "Do not know", "-100" = NA_character_, "-99" = NA_character_, "-97" = NA_character_),
     own_income = as.numeric(own_income),
-<<<<<<< HEAD
     income_range_min = case_when(
       own_income < 1 ~ NA_real_,
       own_income %in% 1:4 ~ 0,
@@ -153,8 +152,7 @@ df <- df %>%
       own_income == 11   ~ 24999,
       own_income == 12   ~ 99999
     ),
-=======
->>>>>>> f70e6002455f3468a43b603fac6dbb2330a99ed7
+
     income_range = case_when(
       own_income < 1 ~ NA_real_,
       own_income %in% 1:4 ~ 1,
@@ -165,8 +163,7 @@ df <- df %>%
       own_income == 12   ~ 6
     ),
     income_range = as.factor(income_range),
-<<<<<<< HEAD
-=======
+
     race = as.character(race),
     race = recode(race, "-100" = NA_character_),
     educ = as.character(educ),
@@ -175,7 +172,6 @@ df <- df %>%
     work = recode(work, "-97" = NA_character_, "-98" = NA_character_, "-99" = NA_character_),
     marital = as.character(marital),
     marital = recode(marital, "-97" = NA_character_, "-98" = NA_character_, "-99" = NA_character_)
->>>>>>> f70e6002455f3468a43b603fac6dbb2330a99ed7
   )
 
 head(df)
@@ -521,8 +517,7 @@ grid.arrange(work_w_na, work_clean, work_na, ncol=2)
 library(dplyr)
 library(ggplot2)
 
-ggplot(
-  df_clean %>%
+  ggplot(df_clean %>%
     group_by(year, happiness) %>%
     summarise(count = n(), .groups = "drop") %>%
     group_by(year) %>%
@@ -582,6 +577,8 @@ ggplot(
 #     title = "Income Distribution across Time"
 #   )
 ```
+
+
 ### Variables across region
 ```{r}
 # Happiness
@@ -616,6 +613,13 @@ ggplot(df_clean, aes(x = interaction(happiness, region), fill = sex)) +
 
 ```
 
+```{r}
+ggplot(df_clean, aes(x = educ, fill=sex)) + 
+    theme_minimal() + 
+    labs(x = "educ", title = "Education Groups") + 
+    geom_bar(position = position_dodge(width = 0.9))+
+    coord_cartesian(ylim = c(0, 15000))
+```
 
 
 # Part 2

@@ -1,9 +1,10 @@
 library(shiny)
 library(bslib)
 library(ggplot2)
+library(dplyr)
 
 # ---- Load Data ----
-data_clean <- read.csv("df_clean.csv", stringsAsFactors = FALSE)
+df_clean <- read.csv("df_clean.csv", stringsAsFactors = FALSE)
 
 
 # Define UI ----
@@ -51,37 +52,50 @@ ui <- page_sidebar(
             justify-content: space-between;
             gap: 10px;
           ",
-          # Box 1 (contains bar chart)
+          # Box 1 (contains bar chart / Education)
           div(
             plotOutput("bar_educ", height = "100%", width = "100%"),
             style = "
               border: 1px solid #00000040;
-              width: 200px;
+              width: 250px;
               height: 200px;
               display: flex;
               justify-content: center;
               align-items: center;
             "
           ),
-          # Box 2 (contains bar chart)
+          # Box 2 (contains bar chart / Happiness)
           div(
             plotOutput("bar_happy", height = "100%", width = "100%"),
             style = "
               border: 1px solid #00000040;
-              width: 200px;
+              width: 250px;
               height: 200px;
               display: flex;
               justify-content: center;
               align-items: center;
             "
           ),
-          lapply(3:5, function(i) {
+          
+          # Box 2 (contains bar chart / Race)
+          div(
+            plotOutput("bar_race", height = "100%", width = "100%"),
+            style = "
+              border: 1px solid #00000040;
+              width: 250px;
+              height: 200px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            "
+          ),
+          lapply(4:5, function(i) {
             div(
               i,
               style = "
                 background-color: #cceeff;
                 border: 1px solid #00000040;
-                width: 200px;
+                width: 250px;
                 height: 200px;
                 display: flex;
                 justify-content: center;
@@ -148,24 +162,57 @@ ui <- page_sidebar(
 
 # Define server logic ----
 server <- function(input, output) {
-  # Bar chart for Box 1
+  # Bar chart for Box 1 (Education Groups)
   output$bar_educ <- renderPlot({
-    req(df_clean)
-    ggplot(df_clean, aes(x = educ, fill=sex)) + 
+    ggplot(df_clean %>%
+             group_by(sex, educ) %>% 
+             summarise(count = n(), .groups = "drop") %>% 
+             group_by(educ) %>%
+             mutate(perc = count / sum(count) * 100),
+           aes(x = educ, y=perc, fill=sex)) + 
+      geom_col(position = position_dodge(width = 0.9))+
       theme_minimal() + 
-      labs(x = "educ", title = "educ groups with NA's removed") + 
-      geom_bar(position = position_dodge(width = 0.9))+
-      coord_cartesian(ylim = c(0, 15000))  # sets y-axis range
+      #theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+      labs(title = "Education Groups", fill="Gender") + 
+      coord_cartesian(ylim = c(0, 100))
+    
   })
-  # Bar chart for Box 2
+  
+  
+  # Bar chart for Box 2 (Happiness Groups)
   output$bar_happy <- renderPlot({
-    req(df_clean)
-    happy_clean <- ggplot(df_clean, aes(x = happiness, fill=sex)) + 
-      theme_minimal() + 
-      labs(x = "Happiness", title = "Happiness groups with NA's removed") + 
-      geom_bar(position = position_dodge(width = 0.9))+
-      coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
+  ggplot(df_clean%>%
+         group_by(sex, happiness) %>% 
+          summarise(count = n(), .groups = "drop") %>% 
+          group_by(happiness) %>%
+          mutate(perc = count / sum(count) * 100),
+          aes(x = happiness, y=perc, fill=sex)) + 
+    geom_col(position = position_dodge(width = 0.9))+
+    #theme_minimal() + 
+      #https://ggplot2.tidyverse.org/reference/element.html
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=.95, size = rel(.80)))+
+    labs(title = "Happiness Groups", fill="Gender") + 
+    coord_cartesian(ylim = c(0, 100))
+    
   })
+  
+  # Bar chart for Box 3 (Race Groups)
+  output$bar_race <- renderPlot({
+    ggplot(df_clean%>%
+             group_by(sex, race) %>% 
+             summarise(count = n(), .groups = "drop") %>% 
+             group_by(race) %>%
+             mutate(perc = count / sum(count) * 100),
+           aes(x = race, y=perc, fill=sex)) + 
+    geom_col(position = position_dodge(width = 0.9))+
+      theme_minimal() + 
+      labs(x = "race", title = "Race Groups") + 
+      coord_cartesian(ylim = c(0, 100))
+    
+  })
+ 
+  
+  
 }
 
 # Run the app ----
