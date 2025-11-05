@@ -13,6 +13,7 @@ ui <- page_sidebar(
   sidebar = sidebar("Sidebar"),
   
   # Main card container
+  # things to do in card: https://rstudio.github.io/bslib/articles/cards/index.html
   card(
     card_header("Gender distributions across regions and time"),
     card_body(
@@ -32,7 +33,19 @@ ui <- page_sidebar(
             display: flex;
             justify-content: flex-start;
           ",
-          div("10",
+          div(
+            # to use for large nr variables
+            # https://shiny.posit.co/r/articles/build/selectize/#server-side-selectize
+            selectInput(
+            "var",
+            label="Choose a variable to display",
+            choices=
+              c(
+                "Happiness",
+                "Education",
+                "Race"
+              )
+            ),
               style = "
                 background-color: #cceeff;
                 border: 1px solid #00000040;
@@ -57,7 +70,7 @@ ui <- page_sidebar(
             plotOutput("bar_educ", height = "100%", width = "100%"),
             style = "
               border: 1px solid #00000040;
-              width: 250px;
+              width: 260px;
               height: 200px;
               display: flex;
               justify-content: center;
@@ -69,7 +82,7 @@ ui <- page_sidebar(
             plotOutput("bar_happy", height = "100%", width = "100%"),
             style = "
               border: 1px solid #00000040;
-              width: 250px;
+              width: 260px;
               height: 200px;
               display: flex;
               justify-content: center;
@@ -82,7 +95,7 @@ ui <- page_sidebar(
             plotOutput("bar_race", height = "100%", width = "100%"),
             style = "
               border: 1px solid #00000040;
-              width: 250px;
+              width: 260px;
               height: 200px;
               display: flex;
               justify-content: center;
@@ -95,7 +108,7 @@ ui <- page_sidebar(
               style = "
                 background-color: #cceeff;
                 border: 1px solid #00000040;
-                width: 250px;
+                width: 260px;
                 height: 200px;
                 display: flex;
                 justify-content: center;
