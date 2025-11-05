@@ -724,8 +724,8 @@ p_age <- ggplot(diverging_age,
   labs(x = "Age", y = "Percentage", title = "Sex responses per Age") +
   coord_cartesian(ylim = c(-100, 100))+
   scale_x_continuous(breaks = all_ages) +
-  scale_y_continuous(labels = function(x) abs(x))+
-  coord_flip()
+  scale_y_continuous(labels = function(x) abs(x))
+  #coord_flip()
   
 
 

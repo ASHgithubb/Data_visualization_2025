@@ -90,7 +90,7 @@ ui <- page_sidebar(
             "
           ),
           
-          # Box 2 (contains bar chart / Race)
+          # Box 3 (contains bar chart / Race)
           div(
             plotOutput("bar_race", height = "100%", width = "100%"),
             style = "
@@ -102,21 +102,58 @@ ui <- page_sidebar(
               align-items: center;
             "
           ),
-          lapply(4:5, function(i) {
-            div(
-              i,
-              style = "
-                background-color: #cceeff;
-                border: 1px solid #00000040;
-                width: 260px;
-                height: 200px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                font-size: 20px;
-              "
-            )
-          })
+          # Box 3 (contains bar chart / marital)
+          div(
+            plotOutput("bar_marital", height = "100%", width = "100%"),
+            style = "
+              border: 1px solid #00000040;
+              width: 260px;
+              height: 200px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            "
+          ),
+          
+          div(
+            plotOutput("bar_age", height = "100%", width = "100%"),
+            style = "
+              border: 1px solid #00000040;
+              width: 260px;
+              height: 200px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            "
+          ),
+          
+          div(
+            plotOutput("bar_work", height = "100%", width = "100%"),
+            style = "
+              border: 1px solid #00000040;
+              width: 260px;
+              height: 200px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            "
+          ),
+
+          #lapply(5:5, function(i) {
+          #  div(
+          #    i,
+          #    style = "
+          #      background-color: #cceeff;
+          #      border: 1px solid #00000040;
+          #      width: 260px;
+          #      height: 200px;
+          #      display: flex;
+          #      justify-content: center;
+          #      align-items: center;
+          #      font-size: 20px;
+          #    "
+          # )
+          #})
         ),
         
         # Row 3: Boxes 6–7 (equal width)
@@ -223,9 +260,51 @@ server <- function(input, output) {
       coord_cartesian(ylim = c(0, 100))
     
   })
- 
   
+  output$bar_marital <- renderPlot({
+    ggplot(df_clean%>%
+             group_by(sex, marital) %>% 
+             summarise(count = n(), .groups = "drop") %>% 
+             group_by(marital) %>%
+             mutate(perc = count / sum(count) * 100),
+           aes(x = marital, y=perc, fill=sex)) + 
+      geom_col(position = position_dodge(width = 0.9))+
+      theme_minimal() + 
+      labs(x = "marital", title = "Marraige Type") + 
+      coord_cartesian(ylim = c(0, 100))
+  })
   
+  output$bar_age <- renderPlot({
+    all_ages <- unique(df_clean$age)
+    diverging_age <- df_clean %>%
+      group_by(sex, age) %>% 
+      summarise(count = n(), .groups = "drop") %>% 
+      group_by(age) %>%
+      mutate(perc = count / sum(count) * 100) %>%
+      mutate(perc_diverging = ifelse(sex == "F", -perc, perc))
+    ggplot(diverging_age,
+           aes(x = age, y = perc_diverging, fill = sex)) + 
+      geom_col() +
+      geom_hline(yintercept = 0, color = "black", linewidth = 0.5) +
+      theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1, size = rel(.80))) +
+      labs(x = "Age", y = "Percentage", title = "Sex responses per Age") +
+      coord_cartesian(ylim = c(-100, 100))+
+      scale_x_continuous(breaks = all_ages) +
+      scale_y_continuous(labels = function(x) abs(x))
+  })
+  
+  output$bar_work <- renderPlot({
+    ggplot(df_clean%>%
+             group_by(sex, work) %>% 
+             summarise(count = n(), .groups = "drop") %>% 
+             group_by(work) %>%
+             mutate(perc = count / sum(count) * 100),
+           aes(x = work, y=perc, fill=sex)) + 
+      geom_col(position = position_dodge(width = 0.9))+
+      theme_minimal() + 
+      labs(x = "work", title = "Working Classes") + 
+      coord_cartesian(ylim = c(0, 100))
+  })
 }
 
 # Run the app ----
