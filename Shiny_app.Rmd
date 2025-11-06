@@ -37,7 +37,7 @@ knitr::opts_knit$set(root.dir = '.')
 getwd()
 
 # Loading packages
-pacman::p_load(tidyverse, pastecs, gridExtra, ggplot2, tinytex, shiny, bslib, plotly, webshot2)
+pacman::p_load(tidyverse, pastecs, gridExtra, ggplot2, tinytex, shiny, bslib, plotly, webshot2, sf, jsonlite)
 
 ```
 
@@ -264,7 +264,8 @@ region_w_na <- ggplot(df, aes(x = region, fill=sex)) +
   theme_minimal() + 
   labs(x = "region", title = "region with NA's") + 
   geom_bar(position = position_dodge(width = 0.9))+
-  coord_cartesian(ylim = c(0, 8000))  # sets y-axis range
+  coord_cartesian(ylim = c(0, 8000))+  # sets y-axis range
+  coord_cartesian(xlim = c(0, 10))  # sets y-axis range
 
 # region NA's removed
 region_clean <- ggplot(df_clean, aes(x = region, fill=sex)) + 
@@ -527,10 +528,6 @@ ggplot(df_clean, aes(x = interaction(happiness, region), fill = sex)) +
 
 ```
 ```{r}
-#Map
-library(usmap) 
-#includes: .east_north_central, .east_south_central, .midwest_region, .mid_atlantic, .mountain, .new_england, .northeast_region, .north_central_region, .pacific, .south_atlantic, .south_region, .west_north_central, .west_region, .west_south_central
-
 # Define mapping of regions to state abbreviations
 us_regions <- list(
   "New England" = c("CT", "ME", "MA", "NH", "RI", "VT"),
@@ -544,66 +541,56 @@ us_regions <- list(
   "Pacific" = c("AK", "CA", "HI", "OR", "WA")
 )
 
-# Add 'states' column based on 'region'
-df_clean <- df_clean %>%
-  mutate(state = sapply(region, function(r) {
-    if (r %in% names(us_regions)) {
-      paste(us_regions[[r]], collapse = ", ")
-    } else {
-      NA
-    }
-  }))
-
 # Convert the list to a tidy dataframe
-region_df <- tibble(
+region_to_state_df <- tibble(
   region = rep(names(us_regions), lengths(us_regions)),
   state = unlist(us_regions)
 )
 
-# Assign one unique color per region
-region_colors <- c(
-  "New England" = "#6BAED6",
-  "Middle Atlantic" = "#FD8D3C",
-  "East North Central" = "#31A354",
-  "West North Central" = "#756BB1",
-  "South Atlantic" = "#E6550D",
-  "East South Central" = "#636363",
-  "West South Central" = "#9ECAE1",
-  "Mountain" = "#74C476",
-  "Pacific" = "#E377C2"
+# Assign the data 
+data_df <- data.frame(
+  region = c(
+    "New England",
+    "Middle Atlantic",
+    "East North Central",
+    "West North Central",
+    "South Atlantic",
+    "East South Central",
+    "West South Central",
+    "Mountain",
+    "Pacific"
+  ),
+  data = c(2, 6, 15, 13, 20, 3, 5, 7, 12)
 )
-
-# Add the color column
-region_df <- region_df %>%
-  mutate(color = region_colors[region])
-
-write.csv(region_df, "data_vis_shiny_app/df_regions.csv", row.names = FALSE)
-
-
-# --- Plot each region in a unique color ---
-plot_usmap(data = region_df, regions = "state", values = "region", color = "black") +
-  scale_fill_manual(
-    name = "Region",
-    values = c(
-      "New England" = "#6BAED6",
-      "Middle Atlantic" = "#FD8D3C",
-      "East North Central" = "#31A354",
-      "West North Central" = "#756BB1",
-      "South Atlantic" = "#E6550D",
-      "East South Central" = "#636363",
-      "West South Central" = "#9ECAE1",
-      "Mountain" = "#74C476",
-      "Pacific" = "#E377C2"
-    )
-  ) +
-  labs(
-    title = "U.S. Regions by State",
-    subtitle = "Each region colored uniquely"
-  ) +
-  theme(legend.position = "right")
 
 
 ```
+
+```{r}
+library(sf)
+library(leaflet)
+
+# Loading map
+my_map <- read_sf("data_vis_shiny_app/us_states/cb_2024_us_state_500k.shp")
+my_map <- my_map %>%
+  rename(state=STUSPS)%>%
+  filter(!state %in% c("AS", "GU", "MP", "PR", "VI"))%>%
+  left_join(region_to_state_df %>% select(state, region), by = "state")
+
+#Converting states to regions
+my_map <- my_map %>%
+  group_by(region) %>%
+  summarise(geometry = st_union(geometry))%>%  # merge polygons
+  left_join(data_df %>% select(data, region), by = "region")
+
+
+# Create a color palette for the map:
+region_palette <- colorFactor(
+  palette = "viridis", 
+  domain = my_map$region, 
+  na.color = "transparent")
+```
+
 
 
 

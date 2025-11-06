@@ -5,7 +5,6 @@ library(dplyr)
 
 # ---- Load Data ----
 data_clean <- read.csv("df_clean.csv", stringsAsFactors = FALSE)
-df_region <- read.csv("df_regions.csv", stringsAsFactors = FALSE)
 
 
 # ---- Define UI ----
@@ -106,63 +105,24 @@ ui <- fluidPage(
         
         # Row 3: Boxes 6–7
         div(
+          leafletOutput("map"),
           style = "
             display: flex;
             justify-content: space-between;
             gap: 10px;
-          ",
-          lapply(6:7, function(i) {
-            div(
-              i,
-              style = "
-                background-color: #cceeff;
+             background-color: #cceeff;
                 border: 1px solid #00000040;
-                width: 50%;
-                height: 300px;
+                width: 1500px;
+                height: 500px;
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                font-size: 20px;
-              "
-            )
-          })
-        ),
-        
-        # Row 4: Box 8 (map)
-        div(
-          style = "
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-          ",
-          div(
-            plotOutput("map", height = 300),
-            style = "
-              border: 1px solid #00000040;
-              width: 50%;
-              height: 300px;
-            "
-          ),
-          
-          # Box 9 placeholder
-          div(
-            "9",
-            style = "
-              background-color: #cceeff;
-              border: 1px solid #00000040;
-              width: 50%;
-              height: 300px;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              font-size: 20px;
-            "
+                font-size: 20px;"
           )
         )
       )
     )
   )
-)
 
 # ---- Define Server Logic ----
 server <- function(input, output) {
@@ -186,30 +146,31 @@ server <- function(input, output) {
   })
   
   # Box 8: map
-  
-  output$map <- renderPlot({
-    # --- Plot each region in a unique color ---
-    plot_usmap(data = df_region, regions = "state", values = "region", color = "black") +
-      scale_fill_manual(
-        name = "Region",
-        values = c(
-          "New England" = "#6BAED6",
-          "Middle Atlantic" = "#FD8D3C",
-          "East North Central" = "#31A354",
-          "West North Central" = "#756BB1",
-          "South Atlantic" = "#E6550D",
-          "East South Central" = "#636363",
-          "West South Central" = "#9ECAE1",
-          "Mountain" = "#74C476",
-          "Pacific" = "#E377C2"
+  output$map <- renderLeaflet({
+    leaflet(my_map) %>%
+      addTiles() %>%
+      setView(lng = -98.5, lat = 39.8, zoom = 4) %>%
+      addPolygons(
+        fillColor = ~region_palette(region),
+        color = "black",
+        weight = 1,
+        opacity = 1,
+        fillOpacity = 0.7,
+        highlightOptions = highlightOptions(
+          weight = 2,
+          color = "#666",
+          fillOpacity = 0.9,
+          bringToFront = TRUE
         )
-      ) +
-      labs(
-        title = "U.S. Regions by State",
-        subtitle = "Each region colored uniquely"
-      ) +
-      theme(legend.position = "right")
+      ) %>%
+      addLegend(
+        pal = region_palette,
+        values = my_map$region,
+        title = "Region",
+        opacity = 1
+      )
   })
+  
 }
 
 # ---- Run the App ----
