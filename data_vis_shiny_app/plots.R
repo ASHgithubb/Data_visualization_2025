@@ -1,6 +1,5 @@
 histogram_discrete <- function(x, title, df, minimal_theme = TRUE) {
-  # Create the base plot
-  p <- ggplot(df %>%
+  ggplot(df %>%
                 group_by(sex, !!sym(x)) %>% 
                 summarise(count = n(), .groups = "drop") %>% 
                 group_by(!!sym(x)) %>%  # Fixed grouping variable
@@ -17,7 +16,6 @@ histogram_discrete <- function(x, title, df, minimal_theme = TRUE) {
     p <- p + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 0.95, size = rel(0.80)))
   }
   
-  return(p)
 }
 
 
@@ -55,7 +53,7 @@ histogram_year <- function(df){
     mutate(perc = count / sum(count) * 100) %>%
     mutate(perc_diverging = ifelse(sex == "F", -perc, perc))
   
-  p_year <- ggplot(diverging_year,
+  ggplot(diverging_year,
                    aes(x = year, y = perc_diverging, fill = sex)) + 
     geom_col() +
     geom_hline(yintercept = 0, color = "black", linewidth = 0.5) +
@@ -65,4 +63,26 @@ histogram_year <- function(df){
     scale_x_continuous(breaks = complete_years) +
     scale_y_continuous(labels = function(x) abs(x))+
     coord_flip()
+  
+}
+
+
+temp_plot_year <- function(x, df){
+  ggplot(df %>%
+           group_by(year, !!sym(x)) %>%
+           summarise(count = n(), .groups = "drop") %>%
+           group_by(year) %>%
+           mutate(perc = count / sum(count) * 100),
+         aes(x = year, y = perc, color = !!sym(x), group = !!sym(x))
+  ) +
+    geom_point(size = 2) +
+    geom_line() +
+    theme_minimal() +
+    labs(
+      x = "Year",
+      y = "Percentage of Responses",
+      color = x,
+      title = paste(x ,"Distribution across Time")
+    )
+  
 }

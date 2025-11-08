@@ -13,7 +13,7 @@ df_clean <- read.csv("df_clean.csv", stringsAsFactors = FALSE)
 # Define UI ----
 ui <- page_sidebar(
   title = "Interactive Visualization Project",
-  #sidebar = sidebar("Sidebar"),
+  sidebar = sidebar("Sidebar"),
   
   # Main card container
   # things to do in card: https://rstudio.github.io/bslib/articles/cards/index.html
@@ -46,19 +46,21 @@ ui <- page_sidebar(
               c(
                 "Happiness",
                 "Education",
-                "Race"
+                "Race",
+                "Marital Status",
+                "Work"
               )
-            ),
-              style = "
-                background-color: #cceeff;
-                border: 1px solid #00000040;
-                width: 20%;
-                height: 20px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                font-size: 10px;
-              ")
+            )
+              #style = "
+              #  background-color: #cceeff;
+              #  border: 1px solid #00000040;
+              #  width: 20%;
+              #  height: 20px;
+              #  display: flex;
+              #  justify-content: center;
+              #  align-items: center;
+              #  font-size: 10px;
+              #")
         )
       )
     ),
@@ -173,7 +175,18 @@ ui <- page_sidebar(
             justify-content: space-between;
             gap: 10px;
           ",
-          lapply(6:7, function(i) {
+          div(
+            plotOutput("temp", height = "100%", width = "100%"),
+            style = "
+              border: 1px solid #00000040;
+              width: 50%;
+              height: 300px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            "
+          ),
+          lapply(7:7, function(i) {
             div(
               i,
               style = "
@@ -188,6 +201,8 @@ ui <- page_sidebar(
               "
             )
           })
+          ),
+        
         )),
     card_body(
         
@@ -216,7 +231,7 @@ ui <- page_sidebar(
         )
       )
   )
-)
+  )
 #)
 
 # 'page_navbar' creates a multi-page user interface that includes a navigation bar
@@ -367,6 +382,17 @@ server <- function(input, output) {
   })
 
   
+  
+  output$temp <- renderPlot({
+    x <- switch(input$var,
+                "Happiness" = "happiness",
+                "Education" = "educ",
+                "Race" = "race",
+                "Marital Status" = "marital",
+                "Work"  = "work")
+    
+    temp_plot_year(x=x, df=df_clean)
+  })
   
 }
 
