@@ -3,8 +3,11 @@ library(bslib)
 library(ggplot2)
 library(dplyr)
 
-# ---- Load Data ----
+
+# ---- Load Data and Functions----
+source("plots.R")
 df_clean <- read.csv("df_clean.csv", stringsAsFactors = FALSE)
+
 
 
 # Define UI ----
@@ -221,99 +224,152 @@ ui <- page_sidebar(
 # Define server logic ----
 server <- function(input, output) {
   # Bar chart for Box 1 (Education Groups)
-  output$bar_educ <- renderPlot({
-    ggplot(df_clean %>%
-             group_by(sex, educ) %>% 
-             summarise(count = n(), .groups = "drop") %>% 
-             group_by(educ) %>%
-             mutate(perc = count / sum(count) * 100),
-           aes(x = educ, y=perc, fill=sex)) + 
-      geom_col(position = position_dodge(width = 0.9))+
-      theme_minimal() + 
+  
+  ############################ How it should look #############################
+  #output$bar_educ <- renderPlot({
+  #  ggplot(df_clean %>%
+  #           group_by(sex, educ) %>% 
+  #           summarise(count = n(), .groups = "drop") %>% 
+  #           group_by(educ) %>%
+  #           mutate(perc = count / sum(count) * 100),
+  #         aes(x = educ, y=perc, fill=sex)) + 
+  #    geom_col(position = position_dodge(width = 0.9))+
+  #    theme_minimal() + 
       #theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-      labs(title = "Education Groups", fill="Gender") + 
-      coord_cartesian(ylim = c(0, 100))
-    
+  #    labs(title = "Education Groups", fill="Gender") + 
+  #    coord_cartesian(ylim = c(0, 100))
+  #  
+  #})
+  
+  ########################### Using the function ##############################
+  output$bar_educ <- renderPlot({
+    histogram_discrete(x = "educ", title = "Education Groups", df = df_clean, minimal_theme=TRUE)
   })
   
   
   # Bar chart for Box 2 (Happiness Groups)
+  
+  #################### How it should look #############################
+  #output$bar_happy <- renderPlot({
+  #ggplot(df_clean%>%
+  #       group_by(sex, happiness) %>% 
+  #        summarise(count = n(), .groups = "drop") %>% 
+  #        group_by(happiness) %>%
+  #        mutate(perc = count / sum(count) * 100),
+  #        aes(x = happiness, y=perc, fill=sex)) + 
+  #  geom_col(position = position_dodge(width = 0.9))+
+  #  #theme_minimal() + 
+  #    #https://ggplot2.tidyverse.org/reference/element.html
+  #  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=.95, size = rel(.80)))+
+  #  labs(title = "Happiness Groups", fill="Gender") + 
+  #  coord_cartesian(ylim = c(0, 100))
+  #  
+  #})
+  
+  #################### Using the function ###########################
   output$bar_happy <- renderPlot({
-  ggplot(df_clean%>%
-         group_by(sex, happiness) %>% 
-          summarise(count = n(), .groups = "drop") %>% 
-          group_by(happiness) %>%
-          mutate(perc = count / sum(count) * 100),
-          aes(x = happiness, y=perc, fill=sex)) + 
-    geom_col(position = position_dodge(width = 0.9))+
-    #theme_minimal() + 
-      #https://ggplot2.tidyverse.org/reference/element.html
-    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=.95, size = rel(.80)))+
-    labs(title = "Happiness Groups", fill="Gender") + 
-    coord_cartesian(ylim = c(0, 100))
-    
+    histogram_discrete(x = "happiness", title = "Happiness Groups", df= df_clean, minimal_theme=FALSE)
   })
   
   # Bar chart for Box 3 (Race Groups)
+  
+  ##################  How it should look ###################
+  #output$bar_race <- renderPlot({
+  #  ggplot(df_clean%>%
+  #           group_by(sex, race) %>% 
+  #           summarise(count = n(), .groups = "drop") %>% 
+  #           group_by(race) %>%
+  #           mutate(perc = count / sum(count) * 100),
+  #         aes(x = race, y=perc, fill=sex)) + 
+  #  geom_col(position = position_dodge(width = 0.9))+
+  #    theme_minimal() + 
+  #    labs(x = "race", title = "Race Groups", fill="Gender") + 
+  #    coord_cartesian(ylim = c(0, 100))
+  #  
+  #})
+  
+  
+  ################## Using the function ####################
   output$bar_race <- renderPlot({
-    ggplot(df_clean%>%
-             group_by(sex, race) %>% 
-             summarise(count = n(), .groups = "drop") %>% 
-             group_by(race) %>%
-             mutate(perc = count / sum(count) * 100),
-           aes(x = race, y=perc, fill=sex)) + 
-    geom_col(position = position_dodge(width = 0.9))+
-      theme_minimal() + 
-      labs(x = "race", title = "Race Groups", fill="Gender") + 
-      coord_cartesian(ylim = c(0, 100))
-    
+    histogram_discrete(x = "race", title = "Race Groups", df= df_clean, minimal_theme=TRUE)
   })
+  
+  # Bar chart for Box .. (Marital Groups)
+  
+  ##################  How it should look ###################
+  #output$bar_marital <- renderPlot({
+  #  ggplot(df_clean%>%
+  #           group_by(sex, marital) %>% 
+  #           summarise(count = n(), .groups = "drop") %>% 
+  #           group_by(marital) %>%
+  #           mutate(perc = count / sum(count) * 100),
+  #         aes(x = marital, y=perc, fill=sex)) + 
+  #    geom_col(position = position_dodge(width = 0.9))+
+  #    theme_minimal() + 
+  #    labs(x = "marital", title = "Marriage Type", fill="Gender") + 
+  #    coord_cartesian(ylim = c(0, 100))
+  #})
+  
+  ################# Using the function #####################
   
   output$bar_marital <- renderPlot({
-    ggplot(df_clean%>%
-             group_by(sex, marital) %>% 
-             summarise(count = n(), .groups = "drop") %>% 
-             group_by(marital) %>%
-             mutate(perc = count / sum(count) * 100),
-           aes(x = marital, y=perc, fill=sex)) + 
-      geom_col(position = position_dodge(width = 0.9))+
-      theme_minimal() + 
-      labs(x = "marital", title = "Marraige Type", fill="Gender") + 
-      coord_cartesian(ylim = c(0, 100))
+    histogram_discrete(x="marital", title="Marriage Type", df=df_clean, minimal_theme=TRUE)
   })
   
+  
+  # Bar chart for Box ... (Age Group)
+  
+  ##################  How it should look ###################
+  #output$bar_age <- renderPlot({
+  #  all_ages <- unique(df_clean$age)
+  #  diverging_age <- df_clean %>%
+  #    group_by(sex, age) %>% 
+  #    summarise(count = n(), .groups = "drop") %>% 
+  #    group_by(age) %>%
+  #    mutate(perc = count / sum(count) * 100) %>%
+  #    mutate(perc_diverging = ifelse(sex == "F", -perc, perc))
+  #  ggplot(diverging_age,
+  #         aes(x = age, y = perc_diverging, fill = sex)) + 
+  #    geom_col() +
+  #    geom_hline(yintercept = 0, color = "black", linewidth = 0.5) +
+  #    theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1, size = rel(.80))) +
+  #    labs(x = "Age", y = "Percentage", title = "Sex responses per Age") +
+  #    coord_cartesian(ylim = c(-100, 100))+
+  #    #scale_x_continuous(breaks = all_ages) +
+  #    scale_y_continuous(labels = function(x) abs(x))
+  #})
+  
+  ####################### Using the function ######################
   output$bar_age <- renderPlot({
-    all_ages <- unique(df_clean$age)
-    diverging_age <- df_clean %>%
-      group_by(sex, age) %>% 
-      summarise(count = n(), .groups = "drop") %>% 
-      group_by(age) %>%
-      mutate(perc = count / sum(count) * 100) %>%
-      mutate(perc_diverging = ifelse(sex == "F", -perc, perc))
-    ggplot(diverging_age,
-           aes(x = age, y = perc_diverging, fill = sex)) + 
-      geom_col() +
-      geom_hline(yintercept = 0, color = "black", linewidth = 0.5) +
-      theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1, size = rel(.80))) +
-      labs(x = "Age", y = "Percentage", title = "Sex responses per Age") +
-      coord_cartesian(ylim = c(-100, 100))+
-      #scale_x_continuous(breaks = all_ages) +
-      scale_y_continuous(labels = function(x) abs(x))
+    histogram_age(df=df_clean)
   })
   
+  # Bar chart for Box ... (work Group)
+  
+  ##################  How it should look ###################
+  #output$bar_work <- renderPlot({
+  #  ggplot(df_clean%>%
+  #           group_by(sex, work) %>% 
+  #           summarise(count = n(), .groups = "drop") %>% 
+  #           group_by(work) %>%
+  #           mutate(perc = count / sum(count) * 100),
+  #         aes(x = work, y=perc, fill=sex)) + 
+  #    geom_col(position = position_dodge(width = 0.9))+
+  #    theme_minimal() + 
+  #    labs(x = "work", title = "Working Classes", fill= "Gender") + 
+  #    coord_cartesian(ylim = c(0, 100))
+  #})
+
+
+####################### Using the function ######################
   output$bar_work <- renderPlot({
-    ggplot(df_clean%>%
-             group_by(sex, work) %>% 
-             summarise(count = n(), .groups = "drop") %>% 
-             group_by(work) %>%
-             mutate(perc = count / sum(count) * 100),
-           aes(x = work, y=perc, fill=sex)) + 
-      geom_col(position = position_dodge(width = 0.9))+
-      theme_minimal() + 
-      labs(x = "work", title = "Working Classes", fill= "Gender") + 
-      coord_cartesian(ylim = c(0, 100))
+  histogram_discrete(x="work", title="Working Classes", df=df_clean, minimal_theme=TRUE)
   })
+
+  
+  
 }
+
 
 # Run the app ----
 shinyApp(ui = ui, server = server)
