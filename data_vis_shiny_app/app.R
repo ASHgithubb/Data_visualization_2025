@@ -10,12 +10,12 @@ df_clean <- read.csv("df_clean.csv", stringsAsFactors = FALSE)
 # Define UI ----
 ui <- page_sidebar(
   title = "Interactive Visualization Project",
-  sidebar = sidebar("Sidebar"),
+  #sidebar = sidebar("Sidebar"),
   
   # Main card container
   # things to do in card: https://rstudio.github.io/bslib/articles/cards/index.html
   card(
-    card_header("Gender distributions across regions and time"),
+    #card_header("Gender distributions across regions and time"),
     card_body(
       
       # ---- CARD CONTENT ----
@@ -56,9 +56,14 @@ ui <- page_sidebar(
                 align-items: center;
                 font-size: 10px;
               ")
-        ),
+        )
+      )
+    ),
+        card(
+          card_header("Gender distributions across regions and time"),
+          card_body(
         
-        # Row 2: Boxes 1–5 (quadrants, full row)
+         #Row 2: Boxes 1–5 (quadrants, full row)
         div(
           style = "
             display: flex;
@@ -70,7 +75,7 @@ ui <- page_sidebar(
             plotOutput("bar_educ", height = "100%", width = "100%"),
             style = "
               border: 1px solid #00000040;
-              width: 260px;
+              width: 290px;
               height: 200px;
               display: flex;
               justify-content: center;
@@ -82,7 +87,7 @@ ui <- page_sidebar(
             plotOutput("bar_happy", height = "100%", width = "100%"),
             style = "
               border: 1px solid #00000040;
-              width: 260px;
+              width: 290px;
               height: 200px;
               display: flex;
               justify-content: center;
@@ -95,7 +100,7 @@ ui <- page_sidebar(
             plotOutput("bar_race", height = "100%", width = "100%"),
             style = "
               border: 1px solid #00000040;
-              width: 260px;
+              width: 290px;
               height: 200px;
               display: flex;
               justify-content: center;
@@ -107,31 +112,31 @@ ui <- page_sidebar(
             plotOutput("bar_marital", height = "100%", width = "100%"),
             style = "
               border: 1px solid #00000040;
-              width: 260px;
+              width: 290px;
               height: 200px;
               display: flex;
               justify-content: center;
               align-items: center;
             "
           ),
-          
+          # Box 4 (contains bar chart / age)
           div(
             plotOutput("bar_age", height = "100%", width = "100%"),
             style = "
               border: 1px solid #00000040;
-              width: 260px;
+              width: 290px;
               height: 200px;
               display: flex;
               justify-content: center;
               align-items: center;
             "
           ),
-          
+          # Box 4 (contains bar chart / work)
           div(
             plotOutput("bar_work", height = "100%", width = "100%"),
             style = "
               border: 1px solid #00000040;
-              width: 260px;
+              width: 290px;
               height: 200px;
               display: flex;
               justify-content: center;
@@ -155,7 +160,9 @@ ui <- page_sidebar(
           # )
           #})
         ),
-        
+      )
+    ),
+          card_body( 
         # Row 3: Boxes 6–7 (equal width)
         div(
           style = "
@@ -178,7 +185,8 @@ ui <- page_sidebar(
               "
             )
           })
-        ),
+        )),
+    card_body(
         
         # Row 4: Boxes 8–9 (equal width)
         div(
@@ -204,9 +212,9 @@ ui <- page_sidebar(
           })
         )
       )
-    )
   )
 )
+#)
 
 # 'page_navbar' creates a multi-page user interface that includes a navigation bar
 
@@ -256,7 +264,7 @@ server <- function(input, output) {
            aes(x = race, y=perc, fill=sex)) + 
     geom_col(position = position_dodge(width = 0.9))+
       theme_minimal() + 
-      labs(x = "race", title = "Race Groups") + 
+      labs(x = "race", title = "Race Groups", fill="Gender") + 
       coord_cartesian(ylim = c(0, 100))
     
   })
@@ -270,7 +278,7 @@ server <- function(input, output) {
            aes(x = marital, y=perc, fill=sex)) + 
       geom_col(position = position_dodge(width = 0.9))+
       theme_minimal() + 
-      labs(x = "marital", title = "Marraige Type") + 
+      labs(x = "marital", title = "Marraige Type", fill="Gender") + 
       coord_cartesian(ylim = c(0, 100))
   })
   
@@ -289,7 +297,7 @@ server <- function(input, output) {
       theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1, size = rel(.80))) +
       labs(x = "Age", y = "Percentage", title = "Sex responses per Age") +
       coord_cartesian(ylim = c(-100, 100))+
-      scale_x_continuous(breaks = all_ages) +
+      #scale_x_continuous(breaks = all_ages) +
       scale_y_continuous(labels = function(x) abs(x))
   })
   
@@ -302,7 +310,7 @@ server <- function(input, output) {
            aes(x = work, y=perc, fill=sex)) + 
       geom_col(position = position_dodge(width = 0.9))+
       theme_minimal() + 
-      labs(x = "work", title = "Working Classes") + 
+      labs(x = "work", title = "Working Classes", fill= "Gender") + 
       coord_cartesian(ylim = c(0, 100))
   })
 }
