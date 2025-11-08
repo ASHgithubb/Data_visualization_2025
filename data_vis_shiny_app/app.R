@@ -14,155 +14,94 @@ df_clean <- read.csv("df_clean.csv", stringsAsFactors = FALSE)
 
 # ---- Define UI ----
 ui <- fluidPage(
-  titlePanel("Interactive Visualization Project"),
+  theme = bs_theme(version = 5),
+  selectInput(
+    "var",
+    "Choose a variable to display:",
+    choices = c(
+      "Happiness",
+      "Education", 
+      "Race",
+      "Marital Status",
+      "Work"
+    )
+  ),
+  accordion(
+    open = FALSE,
+    accordion_panel(
+      title = "Histograms",
+      wellPanel(
+        style = "overflow-x:scroll",
+        splitLayout(
+          card(
+            card_body(
+              div(
+                plotOutput("bar_educ"),
+              )
+            )
+          ),
+          card(
+            card_body(
+              div(
+                plotOutput("bar_happy"),
+              )
+            )
+          ),
+          card(
+            card_body(
+              div(
+                plotOutput("bar_work"),
+              )
+            )
+          ),
+          card(
+            card_body(
+              div(
+                plotOutput("bar_race"),
+              )
+            )
+          ),
+          card(
+            card_body(
+              div(
+                plotOutput("bar_marital"),
+              )
+            )
+          ),
+          card(
+            card_body(
+              div(
+                plotOutput("bar_age"),
+
+              )
+            )
+          ),
+          cellWidths = "40%"
+        )
+      )
+    )
+  ),
   
-  # Main card container (no sidebar)
   card(
-    card_header("Gender distributions across regions and time"),
     card_body(
-      
-      # ---- CARD CONTENT ----
       div(
+        plotOutput("temp", height = "100%", width = "100%"),
         style = "
           display: flex;
-          flex-direction: column;
-          gap: 15px;
-        ",
-        
-        # Row 1: Box 10 (same width as one quadrant) + select input
-        div(
-          style = "
-            display: flex;
-            justify-content: flex-start;
-            align-items: start;
-            gap: 15px;
-            width: 30%;
-            height: 80px;
-            display: flex;
-            justify-content: start;
-            align-items: start;
-            font-size: 14px;
-          ",
-          
-          
-          # Variable selector inside same row
-          selectInput(
-            "var",
-            "Choose a variable to display:",
-            choices = c(
-              "Happiness",
-              "Education",
-              "Race",
-              "Marital Status",
-              "Work"
-            )
-          )
-        ),
-        
-        # Row 2: Boxes 1–5 (quadrants)
-        div(
-          style = "
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-          ",
-          
-          # Box 1 (contains bar chart / Education)
-          div(
-            plotOutput("bar_educ", height = "100%", width = "100%"),
-            style = "
-              border: 1px solid #00000040;
-              width: 290px;
-              height: 200px;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-            "
-          ),
-          # Box 2 (contains bar chart / Happiness)
-          div(
-            plotOutput("bar_happy", height = "100%", width = "100%"),
-            style = "
-              border: 1px solid #00000040;
-              width: 290px;
-              height: 200px;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-            "
-          ),
-          
-          # Box 3 (contains bar chart / Race)
-          div(
-            plotOutput("bar_race", height = "100%", width = "100%"),
-            style = "
-              border: 1px solid #00000040;
-              width: 290px;
-              height: 200px;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-            "
-          ),
-          # Box 4 (contains bar chart / marital)
-          div(
-            plotOutput("bar_marital", height = "100%", width = "100%"),
-            style = "
-              border: 1px solid #00000040;
-              width: 290px;
-              height: 200px;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-            "
-          ),
-          # Box 5 (contains bar chart / age)
-          div(
-            plotOutput("bar_age", height = "100%", width = "100%"),
-            style = "
-              border: 1px solid #00000040;
-              width: 290px;
-              height: 200px;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-            "
-          ),
-          # Box 6 (contains bar chart / work)
-          div(
-            plotOutput("bar_work", height = "100%", width = "100%"),
-            style = "
-              border: 1px solid #00000040;
-              width: 290px;
-              height: 200px;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-            "
-          ),
-          
-        ),
-        
-        div(
-          plotOutput("temp", height = "100%", width = "100%"),
-          style = "
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-             background-color: #cceeff;
-                border: 1px solid #00000040;
-                width: 1500px;
-                height: 500px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                font-size: 20px;"
-        )
+          justify-content: space-between;
+          gap: 10px;
+          background-color: #cceeff;
+          border: 1px solid #00000040;
+          width: 1500px;
+          height: 500px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: 20px;"
       )
     )
   )
 )
-
 
 
 ########################################## Previous ############################################################
