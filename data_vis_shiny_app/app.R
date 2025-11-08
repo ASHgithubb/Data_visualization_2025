@@ -11,18 +11,17 @@ df_clean <- read.csv("df_clean.csv", stringsAsFactors = FALSE)
 
 
 # Define UI ----
-ui <- page_sidebar(
-  title = "Interactive Visualization Project",
-  sidebar = sidebar("Sidebar"),
+
+# ---- Define UI ----
+ui <- fluidPage(
+  titlePanel("Interactive Visualization Project"),
   
-  # Main card container
-  # things to do in card: https://rstudio.github.io/bslib/articles/cards/index.html
+  # Main card container (no sidebar)
   card(
-    #card_header("Gender distributions across regions and time"),
+    card_header("Gender distributions across regions and time"),
     card_body(
       
       # ---- CARD CONTENT ----
-      # The grid of boxes 1–10 goes here
       div(
         style = "
           display: flex;
@@ -30,51 +29,44 @@ ui <- page_sidebar(
           gap: 15px;
         ",
         
-        # Row 1: Box 10 (same width as one quadrant)
+        # Row 1: Box 10 (same width as one quadrant) + select input
         div(
           style = "
             display: flex;
             justify-content: flex-start;
+            align-items: start;
+            gap: 15px;
+            width: 30%;
+            height: 80px;
+            display: flex;
+            justify-content: start;
+            align-items: start;
+            font-size: 14px;
           ",
-          div(
-            # to use for large nr variables
-            # https://shiny.posit.co/r/articles/build/selectize/#server-side-selectize
-            selectInput(
+          
+          
+          # Variable selector inside same row
+          selectInput(
             "var",
-            label="Choose a variable to display",
-            choices=
-              c(
-                "Happiness",
-                "Education",
-                "Race",
-                "Marital Status",
-                "Work"
-              )
+            "Choose a variable to display:",
+            choices = c(
+              "Happiness",
+              "Education",
+              "Race",
+              "Marital Status",
+              "Work"
             )
-              #style = "
-              #  background-color: #cceeff;
-              #  border: 1px solid #00000040;
-              #  width: 20%;
-              #  height: 20px;
-              #  display: flex;
-              #  justify-content: center;
-              #  align-items: center;
-              #  font-size: 10px;
-              #")
-        )
-      )
-    ),
-        card(
-          card_header("Gender distributions across regions and time"),
-          card_body(
+          )
+        ),
         
-         #Row 2: Boxes 1–5 (quadrants, full row)
+        # Row 2: Boxes 1–5 (quadrants)
         div(
           style = "
             display: flex;
             justify-content: space-between;
             gap: 10px;
           ",
+          
           # Box 1 (contains bar chart / Education)
           div(
             plotOutput("bar_educ", height = "100%", width = "100%"),
@@ -112,7 +104,7 @@ ui <- page_sidebar(
               align-items: center;
             "
           ),
-          # Box 3 (contains bar chart / marital)
+          # Box 4 (contains bar chart / marital)
           div(
             plotOutput("bar_marital", height = "100%", width = "100%"),
             style = "
@@ -124,7 +116,7 @@ ui <- page_sidebar(
               align-items: center;
             "
           ),
-          # Box 4 (contains bar chart / age)
+          # Box 5 (contains bar chart / age)
           div(
             plotOutput("bar_age", height = "100%", width = "100%"),
             style = "
@@ -136,7 +128,7 @@ ui <- page_sidebar(
               align-items: center;
             "
           ),
-          # Box 4 (contains bar chart / work)
+          # Box 6 (contains bar chart / work)
           div(
             plotOutput("bar_work", height = "100%", width = "100%"),
             style = "
@@ -148,93 +140,257 @@ ui <- page_sidebar(
               align-items: center;
             "
           ),
-
-          #lapply(5:5, function(i) {
-          #  div(
-          #    i,
-          #    style = "
-          #      background-color: #cceeff;
-          #      border: 1px solid #00000040;
-          #      width: 260px;
-          #      height: 200px;
-          #      display: flex;
-          #      justify-content: center;
-          #      align-items: center;
-          #      font-size: 20px;
-          #    "
-          # )
-          #})
+          
         ),
-      )
-    ),
-          card_body( 
-        # Row 3: Boxes 6–7 (equal width)
+        
         div(
+          plotOutput("temp", height = "100%", width = "100%"),
           style = "
             display: flex;
             justify-content: space-between;
             gap: 10px;
-          ",
-          div(
-            plotOutput("temp", height = "100%", width = "100%"),
-            style = "
-              border: 1px solid #00000040;
-              width: 50%;
-              height: 300px;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-            "
-          ),
-          lapply(7:7, function(i) {
-            div(
-              i,
-              style = "
-                background-color: #cceeff;
+             background-color: #cceeff;
                 border: 1px solid #00000040;
-                width: 50%;
-                height: 300px;
+                width: 1500px;
+                height: 500px;
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                font-size: 20px;
-              "
-            )
-          })
-          ),
-        
-        )),
-    card_body(
-        
-        # Row 4: Boxes 8–9 (equal width)
-        div(
-          style = "
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-          ",
-          lapply(8:9, function(i) {
-            div(
-              i,
-              style = "
-                background-color: #cceeff;
-                border: 1px solid #00000040;
-                width: 50%;
-                height: 300px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                font-size: 20px;
-              "
-            )
-          })
+                font-size: 20px;"
         )
       )
+    )
   )
-  )
+)
+
+
+
+########################################## Previous ############################################################
+#ui <- page_sidebar(
+#  title = "Interactive Visualization Project",
+#  sidebar = sidebar("Sidebar"),
+#  
+#  # Main card container
+  # things to do in card: https://rstudio.github.io/bslib/articles/cards/index.html
+#  card(
+#    #card_header("Gender distributions across regions and time"),
+#    card_body(
+#      
+#      # ---- CARD CONTENT ----
+      # The grid of boxes 1–10 goes here
+#      div(
+#        style = "
+#          display: flex;
+#          flex-direction: column;
+#          gap: 15px;
+#        ",
+#        
+#        # Row 1: Box 10 (same width as one quadrant)
+#        div(
+#          style = "
+#            display: flex;
+#            justify-content: flex-start;
+#          ",
+#          div(
+#            # to use for large nr variables
+#            # https://shiny.posit.co/r/articles/build/selectize/#server-side-selectize
+#            selectInput(
+#            "var",
+#            label="Choose a variable to display",
+#            choices=
+#              c(
+#                "Happiness",
+#                "Education",
+#                "Race",
+#                "Marital Status",
+#                "Work"
+#              )
+#            )
+#              #style = "
+#              #  background-color: #cceeff;
+#              #  border: 1px solid #00000040;
+#              #  width: 20%;
+#              #  height: 20px;
+#              #  display: flex;
+#              #  justify-content: center;
+#              #  align-items: center;
+#              #  font-size: 10px;
+#              #")
+#        )
+#      )
+#    ),
+#        card(
+#          card_header("Gender distributions across regions and time"),
+#          card_body(
+        
+#         #Row 2: Boxes 1–5 (quadrants, full row)
+#        div(
+#          style = "
+#            display: flex;
+#            justify-content: space-between;
+#            gap: 10px;
+#          ",
+#          # Box 1 (contains bar chart / Education)
+#          div(
+#            plotOutput("bar_educ", height = "100%", width = "100%"),
+#            style = "
+#              border: 1px solid #00000040;
+#              width: 290px;
+#              height: 200px;
+#              display: flex;
+#              justify-content: center;
+#              align-items: center;
+#            "
+#          ),
+#          # Box 2 (contains bar chart / Happiness)
+#          div(
+#            plotOutput("bar_happy", height = "100%", width = "100%"),
+#            style = "
+#              border: 1px solid #00000040;
+#              width: 290px;
+#              height: 200px;
+#              display: flex;
+#              justify-content: center;
+#              align-items: center;
+#            "
+#          ),
+#          
+#          # Box 3 (contains bar chart / Race)
+#          div(
+#            plotOutput("bar_race", height = "100%", width = "100%"),
+#            style = "
+#              border: 1px solid #00000040;
+#              width: 290px;
+#              height: 200px;
+#              display: flex;
+#              justify-content: center;
+#              align-items: center;
+#            "
+#          ),
+#          # Box 4 (contains bar chart / marital)
+#          div(
+#            plotOutput("bar_marital", height = "100%", width = "100%"),
+#            style = "
+#              border: 1px solid #00000040;
+#              width: 290px;
+#              height: 200px;
+#              display: flex;
+#              justify-content: center;
+#              align-items: center;
+#            "
+#          ),
+#          # Box 5 (contains bar chart / age)
+#          div(
+#            plotOutput("bar_age", height = "100%", width = "100%"),
+#            style = "
+#              border: 1px solid #00000040;
+#              width: 290px;
+#              height: 200px;
+#              display: flex;
+#              justify-content: center;
+#              align-items: center;
+#            "
+#          ),
+#          # Box 6 (contains bar chart / work)
+#          div(
+#            plotOutput("bar_work", height = "100%", width = "100%"),
+#            style = "
+#              border: 1px solid #00000040;
+#              width: 290px;
+#              height: 200px;
+#              display: flex;
+#              justify-content: center;
+#              align-items: center;
+#            "
+#          ),
+#
+#          #lapply(5:5, function(i) {
+#          #  div(
+#          #    i,
+#          #    style = "
+#          #      background-color: #cceeff;
+#          #      border: 1px solid #00000040;
+#          #      width: 260px;
+#          #      height: 200px;
+#          #      display: flex;
+#          #      justify-content: center;
+#          #      align-items: center;
+#          #      font-size: 20px;
+#          #    "
+#          # )
+#          #})
+#        ),
+#      )
+#    ),
+#          card_body( 
+#        # Row 3: Boxes 6–7 (equal width)
+#        div(
+#          style = "
+#            display: flex;
+#            justify-content: space-between;
+#            gap: 10px;
+#          ",
+#          div(
+#            plotOutput("temp", height = "100%", width = "100%"),
+#            style = "
+#              border: 1px solid #00000040;
+#              width: 50%;
+#              height: 300px;
+#              display: flex;
+#              justify-content: center;
+#              align-items: center;
+#            "
+#          ),
+#          lapply(7:7, function(i) {
+#            div(
+#              i,
+#              style = "
+#                background-color: #cceeff;
+#                border: 1px solid #00000040;
+#                width: 50%;
+#                height: 300px;
+#                display: flex;
+#                justify-content: center;
+#                align-items: center;
+#                font-size: 20px;
+#              "
+#            )
+#          })
+#          ),
+#        
+#       )),
+#    card_body(
+#       
+#        # Row 4: Boxes 8–9 (equal width)
+#        div(
+#          style = "
+#            display: flex;
+#            justify-content: space-between;
+#            gap: 10px;
+#          ",
+#          lapply(8:9, function(i) {
+#            div(
+#              i,
+#             style = "
+#               background-color: #cceeff;
+#                border: 1px solid #00000040;
+#                width: 50%;
+#                height: 300px;
+#                display: flex;
+#                justify-content: center;
+#                align-items: center;
+#                font-size: 20px;
+#              "
+#            )
+#          })
+#        )
+#      )
+#  )
+#  )
 #)
 
-# 'page_navbar' creates a multi-page user interface that includes a navigation bar
+############################################### End Previous ##############################################
+
 
 # Define server logic ----
 server <- function(input, output) {
@@ -391,7 +547,16 @@ server <- function(input, output) {
                 "Marital Status" = "marital",
                 "Work"  = "work")
     
-    temp_plot_year(x=x, df=df_clean)
+    title <- switch(input$var,
+                    "Happiness" = "Happiness Levels",
+                    "Education" = "Educational Levels",
+                    "Race" = "Race Distribution",
+                    "Marital Status" = "Marital Status",
+                    "Work" = "Work Distribution"
+      )
+    
+    
+    temp_plot_year(x=x, df=df_clean, title = title)
   })
   
 }

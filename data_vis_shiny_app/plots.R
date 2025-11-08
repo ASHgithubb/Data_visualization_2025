@@ -67,7 +67,7 @@ histogram_year <- function(df){
 }
 
 
-temp_plot_year <- function(x, df){
+temp_plot_year <- function(x, df, title){
   ggplot(df %>%
            group_by(year, !!sym(x)) %>%
            summarise(count = n(), .groups = "drop") %>%
@@ -82,7 +82,7 @@ temp_plot_year <- function(x, df){
       x = "Year",
       y = "Percentage of Responses",
       color = x,
-      title = paste(x ,"Distribution across Time")
+      title = paste(title ,"across Time")
     )
   
 }
