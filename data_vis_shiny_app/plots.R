@@ -1,5 +1,5 @@
 histogram_discrete <- function(x, title, df, minimal_theme = TRUE) {
-  ggplot(df %>%
+  p <- ggplot(df %>%
                 group_by(sex, !!sym(x)) %>% 
                 summarise(count = n(), .groups = "drop") %>% 
                 group_by(!!sym(x)) %>%  # Fixed grouping variable
@@ -15,7 +15,7 @@ histogram_discrete <- function(x, title, df, minimal_theme = TRUE) {
   } else {
     p <- p + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 0.95, size = rel(0.80)))
   }
-  
+  return(p)
 }
 
 
