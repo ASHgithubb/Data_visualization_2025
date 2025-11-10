@@ -37,7 +37,7 @@ knitr::opts_knit$set(root.dir = '.')
 getwd()
 
 # Loading packages
-pacman::p_load(tidyverse, pastecs, gridExtra, ggplot2, tinytex, shiny, bslib, plotly, webshot2)
+pacman::p_load(tidyverse, pastecs, gridExtra, ggplot2, tinytex, shiny, bslib, plotly, webshot2, sf, jsonlite)
 
 ```
 
@@ -326,7 +326,8 @@ region_w_na <- ggplot(df, aes(x = region, fill=sex)) +
   theme_minimal() + 
   labs(x = "region", title = "region with NA's") + 
   geom_bar(position = position_dodge(width = 0.9))+
-  coord_cartesian(ylim = c(0, 8000))  # sets y-axis range
+  coord_cartesian(ylim = c(0, 8000))+  # sets y-axis range
+  coord_cartesian(xlim = c(0, 10))  # sets y-axis range
 
 # region NA's removed
 region_clean <- ggplot(df_clean, aes(x = region, fill=sex)) + 
@@ -511,6 +512,24 @@ grid.arrange(work_w_na, work_clean, work_na, ncol=2)
 ```
 
 
+### Variable distributions percentage
+```{r}
+# happiness 
+df_clean %>%
+  group_by(sex, happiness) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  group_by(sex) %>%                        # calculate percentages within each sex
+  mutate(perc = count / sum(count) * 100) %>%
+  
+  ggplot(aes(x = happiness, y = perc, fill = sex)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.9)) +
+  theme_minimal() +
+  labs(x = "Happiness", y = "Percentage", title = "Happiness distribution") +
+  scale_y_continuous(limits = c(0, 100))
+
+```
+
+
 ### Variables across time
 ```{r}
 # Happiness across Time
@@ -580,6 +599,7 @@ library(ggplot2)
 
 
 ### Variables across region
+`### Variables across region
 ```{r}
 # Happiness
 ggplot(df_clean, aes(x = interaction(happiness, region), fill = sex)) + 
@@ -612,6 +632,70 @@ ggplot(df_clean, aes(x = interaction(happiness, region), fill = sex)) +
 
 
 ```
+```{r}
+# Define mapping of regions to state abbreviations
+us_regions <- list(
+  "New England" = c("CT", "ME", "MA", "NH", "RI", "VT"),
+  "Middle Atlantic" = c("NJ", "NY", "PA"),
+  "East North Central" = c("IL", "IN", "MI", "OH", "WI"),
+  "West North Central" = c("IA", "KS", "MN", "MO", "NE", "ND", "SD"),
+  "South Atlantic" = c("DE", "DC", "FL", "GA", "MD", "NC", "SC", "VA", "WV"),
+  "East South Central" = c("AL", "KY", "MS", "TN"),
+  "West South Central" = c("AR", "LA", "OK", "TX"),
+  "Mountain" = c("AZ", "CO", "ID", "MT", "NV", "NM", "UT", "WY"),
+  "Pacific" = c("AK", "CA", "HI", "OR", "WA")
+)
+
+# Convert the list to a tidy dataframe
+region_to_state_df <- tibble(
+  region = rep(names(us_regions), lengths(us_regions)),
+  state = unlist(us_regions)
+)
+
+# Assign the data 
+data_df <- data.frame(
+  region = c(
+    "New England",
+    "Middle Atlantic",
+    "East North Central",
+    "West North Central",
+    "South Atlantic",
+    "East South Central",
+    "West South Central",
+    "Mountain",
+    "Pacific"
+  ),
+  data = c(2, 6, 15, 13, 20, 3, 5, 7, 12)
+)
+
+
+```
+
+```{r}
+library(sf)
+library(leaflet)
+
+# Loading map
+my_map <- read_sf("data_vis_shiny_app/us_states/cb_2024_us_state_500k.shp")
+my_map <- my_map %>%
+  rename(state=STUSPS)%>%
+  filter(!state %in% c("AS", "GU", "MP", "PR", "VI"))%>%
+  left_join(region_to_state_df %>% select(state, region), by = "state")
+
+#Converting states to regions
+my_map <- my_map %>%
+  group_by(region) %>%
+  summarise(geometry = st_union(geometry))%>%  # merge polygons
+  left_join(data_df %>% select(data, region), by = "region")
+
+
+# Create a color palette for the map:
+region_palette <- colorFactor(
+  palette = "viridis", 
+  domain = my_map$region, 
+  na.color = "transparent")
+```
+
 
 ```{r}
 ggplot(df_clean, aes(x = educ, fill=sex)) + 
