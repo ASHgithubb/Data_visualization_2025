@@ -1,7 +1,7 @@
 ---
 title: "Data Visualization | Fall 2025 @AU"
 subtitle: "Multivariate Analysis of GSS Data"
-author: "Anne Skamris Holm"
+author: "Anne Skamris Holm and Nour Alsaid"
 date: "`r Sys.Date()`"
 header-includes:
 - \usepackage{fancyhdr}
@@ -134,6 +134,25 @@ df <- df %>%
     happiness = as.character(happiness),
     happiness = recode(happiness, "1" = "Very happy", "2" = "Pretty happy", "3" = "Not too happy", "-98" = "Do not know", "-100" = NA_character_, "-99" = NA_character_, "-97" = NA_character_),
     own_income = as.numeric(own_income),
+    income_range_min = case_when(
+      own_income < 1 ~ NA_real_,
+      own_income %in% 1:4 ~ 0,
+      own_income %in% 5:8 ~ 5000,
+      own_income == 9    ~ 10000,
+      own_income == 10   ~ 15000,
+      own_income == 11   ~ 20000,
+      own_income == 12   ~ 25000
+    ),
+    income_range_max = case_when(
+      own_income < 1 ~ NA_real_,
+      own_income %in% 1:4 ~ 4999,
+      own_income %in% 5:8 ~ 9999,
+      own_income == 9    ~ 14999,
+      own_income == 10   ~ 19999,
+      own_income == 11   ~ 24999,
+      own_income == 12   ~ 99999
+    ),
+
     income_range = case_when(
       own_income < 1 ~ NA_real_,
       own_income %in% 1:4 ~ 1,
@@ -144,6 +163,7 @@ df <- df %>%
       own_income == 12   ~ 6
     ),
     income_range = as.factor(income_range),
+
     race = as.character(race),
     race = recode(race, "-100" = NA_character_),
     educ = as.character(educ),
@@ -156,7 +176,49 @@ df <- df %>%
 
 head(df)
 ```
+```{r}
+df_clean <- df %>%
+  select(
+    year,
+    sex,
+    age,
+    region,
+    happiness,
+    income_range,
+    income_range_min,
+    income_range_max
+)
 
+data.frame(
+  column = names(df_clean),
+  na_count = colSums(is.na(df_clean)),
+  na_percent = round(colSums(is.na(df_clean)) / nrow(df_clean) * 100, 1)
+)
+
+df_clean <- na.omit(df)
+#df_clean <- df_clean %>%
+#  filter(!is.na(age), !is.na(sex), !is.na(region))
+
+
+data.frame(
+  column = names(df_clean),
+  na_count = colSums(is.na(df_clean)),
+  na_percent = round(colSums(is.na(df_clean)) / nrow(df_clean) * 100, 1)
+)
+
+head(df_clean)
+```
+
+## Exploring GSS data
+```{r}
+ggplot(df_clean, aes(x = year)) + 
+  theme_minimal() + 
+  labs(x = "Income", title = "Income") + 
+  geom_histogram()
+```
+
+# Part 2
+## Building the shiny app
 ```{r}
 # Creating df_clean with chosen variables
 df_clean <- df %>%
@@ -474,8 +536,7 @@ df_clean %>%
 library(dplyr)
 library(ggplot2)
 
-ggplot(
-  df_clean %>%
+  ggplot(df_clean %>%
     group_by(year, happiness) %>%
     summarise(count = n(), .groups = "drop") %>%
     group_by(year) %>%
@@ -494,6 +555,50 @@ ggplot(
 
 ```
 
+```{r}
+# # Income across Time
+# library(dplyr)
+# library(ggplot2)
+# 
+# # count number of responses per year × income
+# df_counts <- df_clean %>%
+#   group_by(year, income_range) %>%
+#   summarise(count = n(), .groups = "drop")
+# 
+# # connected scatterplot
+# ggplot(df_counts, aes(x = year, y = count, color = income_range, group = income_range)) +
+#   geom_point(size = 2) +
+#   geom_line() +
+#   theme_minimal() +
+#   labs(
+#     x = "Year",
+#     y = "Number of Responses",
+#     color = "Income",
+#     title = "Income Counts across Time"
+#   )
+# 
+# # percentage of each income group per year
+# df_perc <- df_clean %>%
+#   group_by(year, income_range) %>%
+#   summarise(count = n(), .groups = "drop") %>%
+#   group_by(year) %>%
+#   mutate(perc = count / sum(count) * 100)
+# 
+# # connected scatterplot
+# ggplot(df_perc, aes(x = year, y = perc, color = income_range, group = income_range)) +
+#   geom_point(size = 2) +
+#   geom_line() +
+#   theme_minimal() +
+#   labs(
+#     x = "Year",
+#     y = "Percentage of Responses",
+#     color = "Income",
+#     title = "Income Distribution across Time"
+#   )
+```
+
+
+### Variables across region
 `### Variables across region
 ```{r}
 # Happiness
@@ -590,6 +695,168 @@ region_palette <- colorFactor(
   domain = my_map$region, 
   na.color = "transparent")
 ```
+
+
+```{r}
+ggplot(df_clean, aes(x = educ, fill=sex)) + 
+    theme_minimal() + 
+    labs(x = "educ", title = "Education Groups") + 
+    geom_bar(position = position_dodge(width = 0.9))+
+    coord_cartesian(ylim = c(0, 15000))
+```
+
+# Part 2
+## Functions to use in app.R
+
+```{r}
+sum(is.na(df_clean$sex))
+sum(is.na(df_clean$educ))
+```
+
+
+```{r}
+# Education Groups:
+p_educ <-ggplot(df_clean %>%
+             group_by(sex, educ) %>% 
+             summarise(count = n(), .groups = "drop") %>% 
+             group_by(educ) %>%
+             mutate(perc = count / sum(count) * 100),
+           aes(x = educ, y=perc, fill=sex)) + 
+      geom_col(position = position_dodge(width = 0.9))+
+      theme_minimal() + 
+      #theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1))+
+      labs(title = "Education Groups", fill="Gender") + 
+      coord_cartesian(ylim = c(0, 100))
+
+
+# Happiness Groups
+p_hap <- ggplot(df_clean%>%
+         group_by(sex, happiness) %>% 
+          summarise(count = n(), .groups = "drop") %>% 
+          group_by(happiness) %>%
+          mutate(perc = count / sum(count) * 100),
+          aes(x = happiness, y=perc, fill=sex)) + 
+    geom_col(position = position_dodge(width = 0.9))+
+    #theme_minimal() + 
+      #https://ggplot2.tidyverse.org/reference/element.html
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=.95, size = rel(.80)))+
+    labs(title = "Happiness Groups", fill="Gender") + 
+    coord_cartesian(ylim = c(0, 100))
+    
+
+
+# Race Groups
+p_race <- ggplot(df_clean%>%
+             group_by(sex, race) %>% 
+             summarise(count = n(), .groups = "drop") %>% 
+             group_by(race) %>%
+             mutate(perc = count / sum(count) * 100),
+           aes(x = race, y=perc, fill=sex)) + 
+    geom_col(position = position_dodge(width = 0.9))+
+      theme_minimal() + 
+      labs(x = "race", title = "Race Groups") + 
+      coord_cartesian(ylim = c(0, 100))
+
+p_marital <- ggplot(df_clean%>%
+             group_by(sex, marital) %>% 
+             summarise(count = n(), .groups = "drop") %>% 
+             group_by(marital) %>%
+             mutate(perc = count / sum(count) * 100),
+           aes(x = marital, y=perc, fill=sex)) + 
+    geom_col(position = position_dodge(width = 0.9))+
+      theme_minimal() + 
+      labs(x = "marital", title = "Marraige Type") + 
+      coord_cartesian(ylim = c(0, 100))
+  
+p_work <- ggplot(df_clean%>%
+             group_by(sex, work) %>% 
+             summarise(count = n(), .groups = "drop") %>% 
+             group_by(work) %>%
+             mutate(perc = count / sum(count) * 100),
+           aes(x = work, y=perc, fill=sex)) + 
+    geom_col(position = position_dodge(width = 0.9))+
+      theme_minimal() + 
+      labs(x = "work", title = "Working Classes") + 
+      coord_cartesian(ylim = c(0, 100))
+
+
+
+all_ages <- unique(df_clean$age)
+#p_age <- ggplot(df_clean%>%
+#             group_by(sex, age) %>% 
+#             summarise(count = n(), .groups = "drop") %>% 
+#             group_by(age) %>%
+#             mutate(perc = count / sum(count) * 100),
+#           aes(x = age, y=perc, fill=sex)) + 
+#    geom_area(alpha=0.8, size=.5, colour="white")
+#      #theme_minimal() + 
+#      theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust=.95, size = rel(.80)))+
+#      labs(x = "age", title = "Sex responses' Age")+
+#     coord_cartesian(ylim = c(0, 100))
+
+diverging_age <- df_clean %>%
+  group_by(sex, age) %>% 
+  summarise(count = n(), .groups = "drop") %>% 
+  group_by(age) %>%
+  mutate(perc = count / sum(count) * 100) %>%
+  mutate(perc_diverging = ifelse(sex == "F", -perc, perc))
+p_age <- ggplot(diverging_age,
+       aes(x = age, y = perc_diverging, fill = sex)) + 
+  geom_col() +
+  geom_hline(yintercept = 0, color = "black", linewidth = 0.5) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1, size = rel(.80))) +
+  labs(x = "Age", y = "Percentage", title = "Sex responses per Age") +
+  coord_cartesian(ylim = c(-100, 100))+
+  scale_x_continuous(breaks = all_ages) +
+  scale_y_continuous(labels = function(x) abs(x))
+  #coord_flip()
+  
+
+
+#p_year <- ggplot(df_clean%>%
+#             group_by(sex, year) %>% 
+#             summarise(count = n(), .groups = "drop") %>% 
+#             group_by(year) %>%
+#             mutate(perc = count / sum(count) * 100),
+#           aes(x = year, y=perc, fill=sex)) + 
+#    geom_col(position = position_dodge(width = 0.9))+
+      #theme_minimal() + 
+#      theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust=.95, size = rel(.80)))+
+#      labs(x = "Year", title = "Sex responses per Year") +
+#      coord_cartesian(ylim = c(0, 100))+
+#      scale_x_continuous(breaks=complete_years)
+
+complete_years <- min(df_clean$year):max(df_clean$year)
+diverging_year <- df_clean %>%
+  group_by(sex, year) %>% 
+  summarise(count = n(), .groups = "drop") %>% 
+  group_by(year) %>%
+  mutate(perc = count / sum(count) * 100) %>%
+  mutate(perc_diverging = ifelse(sex == "F", -perc, perc))
+
+# Then plot
+p_year <- ggplot(diverging_year,
+       aes(x = year, y = perc_diverging, fill = sex)) + 
+  geom_col() +
+  geom_hline(yintercept = 0, color = "black", linewidth = 0.5) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1, size = rel(.80))) +
+  labs(x = "Year", y = "Percentage", title = "Sex responses per Year") +
+  coord_cartesian(ylim = c(-100, 100))+
+  scale_x_continuous(breaks = complete_years) +
+  scale_y_continuous(labels = function(x) abs(x))+
+  coord_flip()
+  
+
+
+p_educ
+p_hap
+p_race
+p_marital
+p_work
+p_age
+p_year
+```
+
 
 
 
