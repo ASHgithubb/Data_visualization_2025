@@ -185,9 +185,9 @@ server <- function(input, output) {
     temp_plot_year(x = x, df = df_clean, title = title)
   })
   
-  # Map plot (note: my_map and region_palette must be defined elsewhere)
+  # Map plot 
   output$map <- renderLeaflet({
-    leaflet(my_map) %>%
+    leaflet(map_data) %>%
       addTiles() %>%
       setView(lng = -98.5, lat = 39.8, zoom = 4) %>%
       addPolygons(
@@ -205,7 +205,7 @@ server <- function(input, output) {
       ) %>%
       addLegend(
         pal = region_palette,
-        values = my_map$region,
+        values = map_data$region,
         title = "Region",
         opacity = 1
       )

@@ -6,16 +6,16 @@ date: "`r Sys.Date()`"
 header-includes:
 - \usepackage{fancyhdr}
 output:
-  pdf_document:
-    latex_engine: xelatex
-    toc: true #Created table from headings
-    number_sections: yes
   html_document:
     toc: yes
     number_sections: yes
     toc_float: yes
     theme: united
     highlight: espresso
+  pdf_document:
+    latex_engine: xelatex
+    toc: true #Created table from headings
+    number_sections: yes
   #always_allow_html: true
 geometry: margin=1in
 ---
@@ -127,7 +127,7 @@ df <- df %>%
     region = as.factor(region),
     region = recode(region, "1" = "New England", "2" = "Middle Atlantic",  "3" = "East North Central",  "4" = "West North Central", "5" = "South Atlantic",  "6" = "East South Central",  "7" = "West South Central",  "8" = "Mountain",  "9" = "Pacific"),
     happiness = as.character(happiness),
-    happiness = recode(happiness, "1" = "Very happy", "2" = "Pretty happy", "3" = "Not too happy", "-98" = "Do not know", "-100" = NA_character_, "-99" = NA_character_, "-97" = NA_character_),
+    happiness = recode(happiness, "1" = "Very happy", "2" = "Pretty happy", "3" = "Not too happy", "-98" = NA_character_, "-100" = NA_character_, "-99" = NA_character_, "-97" = NA_character_),
     race = as.character(race),
     race = recode(race, "-100" = NA_character_),
     educ = as.character(educ),
@@ -468,6 +468,8 @@ temp_plot_year <- function(x, df, title){
 
 
 ## Functions for the map
+
+### Creating map
 ```{r}
 # Define mapping of regions to state abbreviations
 us_regions <- list(
@@ -488,47 +490,127 @@ region_to_state_df <- tibble(
   state = unlist(us_regions)
 )
 
-# Assign the data 
-data_df <- data.frame(
-  region = c(
-    "New England",
-    "Middle Atlantic",
-    "East North Central",
-    "West North Central",
-    "South Atlantic",
-    "East South Central",
-    "West South Central",
-    "Mountain",
-    "Pacific"
-  ),
-  data = c(2, 6, 15, 13, 20, 3, 5, 7, 12)
-)
-```
-
-```{r}
 library(sf)
 library(leaflet)
 
 # Loading map
 my_map <- read_sf("data_vis_shiny_app/us_states/cb_2024_us_state_500k.shp")
+
+#Adding column with region names
 my_map <- my_map %>%
   rename(state=STUSPS)%>%
   filter(!state %in% c("AS", "GU", "MP", "PR", "VI"))%>%
   left_join(region_to_state_df %>% select(state, region), by = "state")
 
-#Converting states to regions
-my_map <- my_map %>%
+
+#Converting states to regions 
+map_data <- my_map %>%
   group_by(region) %>%
-  summarise(geometry = st_union(geometry))%>%  # merge polygons
-  left_join(data_df %>% select(data, region), by = "region")
+  summarise(geometry = st_union(geometry))  # merge polygons
+
+write.csv(map_data, "data_vis_shiny_app/map_data.csv", row.names = FALSE)
+
+```
+
+### Creating happiness data
+```{r}
+# Assign the data 
+library(dplyr)
+library(readr)
+
+# Define your decades and regions
+decades <- list(
+  "1970's" = 1970:1979,
+  "1980's" = 1980:1989,
+  "1990's" = 1990:1999,
+  "2000's" = 2000:2009,
+  "2010's" = 2010:2019,
+  "2020's" = 2020:2029
+)
+
+regions <- c(
+  "New England", "Middle Atlantic", "East North Central", "West North Central",
+  "South Atlantic", "East South Central", "West South Central", "Mountain", "Pacific"
+)
+
+# Generate all combinations and compute summaries
+df_happy_all <- purrr::map_dfr(
+  names(decades),
+  \(decade) {
+    purrr::map_dfr(
+      regions,
+      \(reg) {
+        df_clean %>%
+          filter(year %in% decades[[decade]], region == reg) %>%
+          group_by(sex, happiness) %>%
+          summarise(count = n(), .groups = "drop") %>%
+          group_by(sex) %>%
+          mutate(
+            perc = count / sum(count) * 100,
+            region = reg,
+            year = decade
+          )
+      }
+    )
+  }
+)
 
 
-# Create a color palette for the map:
+# Create a complete grid of all combinations (even if missing in data)
+all_combos <- expand_grid(
+  sex = unique(df_clean$sex),
+  happiness = unique(df_clean$happiness),
+  region = regions,
+  year = names(decades)
+)
+
+# Join the grid with the summary table, replacing missing counts with 0
+df_happy <- all_combos %>%
+  left_join(df_happy_all, by = c("sex", "happiness", "region", "year")) %>%
+  mutate(
+    count = replace_na(count, 0),
+    perc = replace_na(perc, 0)
+  ) %>%
+  arrange(year, region, sex, happiness)
+
+#df_happy_change <- df_happy%>%
+# Calculate difference between M and F here
+  
+
+write.csv(df_happy, "data_vis_shiny_app/df_happy.csv", row.names = FALSE)
+```
+
+
+### Combining map and data
+```{r}
+# Filter for the desired decade and region
+df_filtered <- df_happy %>%
+  #filter(region == "Middle Atlantic")%>%
+  filter(year == "1970's", sex == "F", happiness=="Pretty happy")
+
+# Join the percentage data with map_data by region
+## Check values, they dont add up
+map_joined <- df_filtered %>%
+  left_join(map_data, by = "region")
+
+# Create a continuous color palette based on perc (lighter = smaller perc)
+region_palette <- colorNumeric(
+  palette = "YlGnBu",  # yellow-green-blue scale
+  domain = map_joined$perc,
+  reverse = TRUE       # so that low perc is lighter
+)
+
+```
+
+### Designing map
+```{r}
+#Create a color palette for the map:
 region_palette <- colorFactor(
-  palette = "viridis", 
-  domain = my_map$region, 
+  palette = "viridis",
+  domain = my_map$region,
   na.color = "transparent")
 ```
+
 
 
 # Part 3
