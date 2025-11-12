@@ -400,6 +400,7 @@ grid.arrange(marital_w_na, marital_clean, marital_na, ncol=2)
 grid.arrange(educ_w_na, educ_clean, educ_na, ncol=2)
 grid.arrange(work_w_na, work_clean, work_na, ncol=2)
 ```
+
 # Part 2 -building the app
 
 ## From the plots.R file
@@ -495,6 +496,7 @@ library(leaflet)
 
 # Loading map
 my_map <- read_sf("data_vis_shiny_app/us_states/cb_2024_us_state_500k.shp")
+#my_map <- st_simplify(my_map, dTolerance = 1000) # adjust tolerance
 
 #Adding column with region names
 my_map <- my_map %>%
@@ -507,8 +509,6 @@ my_map <- my_map %>%
 map_data <- my_map %>%
   group_by(region) %>%
   summarise(geometry = st_union(geometry))  # merge polygons
-
-write.csv(map_data, "data_vis_shiny_app/map_data.csv", row.names = FALSE)
 
 ```
 
@@ -534,7 +534,7 @@ regions <- c(
 )
 
 # Generate all combinations and compute summaries
-df_happy_all <- purrr::map_dfr(
+df_happy_simple <- purrr::map_dfr(
   names(decades),
   \(decade) {
     purrr::map_dfr(
@@ -565,50 +565,108 @@ all_combos <- expand_grid(
 )
 
 # Join the grid with the summary table, replacing missing counts with 0
-df_happy <- all_combos %>%
-  left_join(df_happy_all, by = c("sex", "happiness", "region", "year")) %>%
+df_happy_all <- all_combos %>%
+  left_join(df_happy_simple, by = c("sex", "happiness", "region", "year")) %>%
   mutate(
     count = replace_na(count, 0),
     perc = replace_na(perc, 0)
   ) %>%
   arrange(year, region, sex, happiness)
 
-#df_happy_change <- df_happy%>%
-# Calculate difference between M and F here
-  
 
-write.csv(df_happy, "data_vis_shiny_app/df_happy.csv", row.names = FALSE)
+df_happy_dif <- df_happy_all %>%
+  select(-"count")%>%
+  pivot_wider(
+    names_from = sex,
+    values_from = perc
+  ) %>%
+  mutate(
+    percent = `M` - `F`  # difference between male and female percentages
+  ) 
 ```
 
 
 ### Combining map and data
 ```{r}
-# Filter for the desired decade and region
-df_filtered <- df_happy %>%
-  #filter(region == "Middle Atlantic")%>%
-  filter(year == "1970's", sex == "F", happiness=="Pretty happy")
+  # Define levels
+  years <- c("1970's", "1980's", "1990's", "2000's", "2010's", "2020's")
+  happiness_levels <- c("Not too happy", "Pretty happy", "Very happy")
 
-# Join the percentage data with map_data by region
-## Check values, they dont add up
-map_joined <- df_filtered %>%
-  left_join(map_data, by = "region")
-
-# Create a continuous color palette based on perc (lighter = smaller perc)
-region_palette <- colorNumeric(
-  palette = "YlGnBu",  # yellow-green-blue scale
-  domain = map_joined$perc,
-  reverse = TRUE       # so that low perc is lighter
+# Function to create shapefiles for all year × happiness combinations
+create_shapefiles <- function(df, map_data, years, levels, out_dir = "data_vis_shiny_app/map_files_happy") {
+  
+  # Ensure output directory exists
+  if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
+  
+  file_counter <- 1
+  
+  for (h in happiness_levels) {
+    for (y in years) {
+      
+      # Filter data for this combination
+      df_filtered <- df %>%
+        filter(year == y, happiness == h)
+      
+      # Join with map geometry
+      map_joined <- df_filtered %>%
+        select(region, percent, year, happiness) %>%
+        left_join(map_data, by = "region") %>%
+        st_as_sf()  # Ensure it is an sf object
+      
+      # Transform CRS to WGS84 for Leaflet
+      map_joined <- st_transform(map_joined, crs = 4326)
+      
+      # Cast to POLYGON explicitly on the geometry column
+      map_joined$geometry <- st_cast(map_joined$geometry, "POLYGON")
+      
+      # Simplify polygons to speed up rendering (optional, adjust tolerance)
+      #map_joined <- st_simplify(map_joined, dTolerance = 10000)
+      
+      # Define filename
+      file_name <- file.path(out_dir, paste0("map_happy_", file_counter, ".shp"))
+      
+      # Write shapefile
+      st_write(map_joined, file_name, delete_dsn = TRUE, quiet = TRUE)
+      
+      cat("Written:", file_name, "\n")
+      
+      file_counter <- file_counter + 1
+    }
+  }
+  
+  cat("All shapefiles created in WGS84.\n")
+}
+  
+  
+create_shapefiles(
+  df = df_happy_dif,
+  map_data = map_data,
+  years = years,
+  levels = happiness_levels
 )
 
+# # Filter for the desired data
+# df_filtered <- df_happy_dif %>%
+#   filter(year == "2010's", happiness=="Pretty happy")
+# 
+# # Join the percentage data with map_data by region
+# map_joined <- df_filtered %>%
+#   select("region", "percent", "year", "happiness")%>%
+#   left_join(map_data, by = "region")
 ```
+
 
 ### Designing map
 ```{r}
-#Create a color palette for the map:
-region_palette <- colorFactor(
-  palette = "viridis",
-  domain = my_map$region,
-  na.color = "transparent")
+# Create a continuous color palette based on perc (lighter = smaller perc)
+region_palette <- colorNumeric(
+  palette = "YlGnBu",  # yellow-green-blue scale
+  domain = map_joined$percent,
+  na.color = "transparent",
+  reverse = TRUE       # so that low perc is lighter
+)
+
+region_palette <- colorNumeric("viridis", domain = my_map$percent)
 ```
 
 
