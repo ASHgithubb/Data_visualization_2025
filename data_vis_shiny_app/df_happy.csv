@@ -1,0 +1,325 @@
+"sex","happiness","region","year","count","perc"
+"F","Not too happy","East North Central","1970's",234,12.4933262146289
+"F","Pretty happy","East North Central","1970's",905,48.3182060864923
+"F","Very happy","East North Central","1970's",734,39.1884676988788
+"M","Not too happy","East North Central","1970's",220,14.3884892086331
+"M","Pretty happy","East North Central","1970's",771,50.4251144538914
+"M","Very happy","East North Central","1970's",538,35.1863963374755
+"F","Not too happy","East South Central","1970's",0,0
+"F","Pretty happy","East South Central","1970's",0,0
+"F","Very happy","East South Central","1970's",0,0
+"M","Not too happy","East South Central","1970's",0,0
+"M","Pretty happy","East South Central","1970's",0,0
+"M","Very happy","East South Central","1970's",0,0
+"F","Not too happy","Middle Atlantic","1970's",183,11.3664596273292
+"F","Pretty happy","Middle Atlantic","1970's",848,52.6708074534161
+"F","Very happy","Middle Atlantic","1970's",579,35.9627329192547
+"M","Not too happy","Middle Atlantic","1970's",170,11.9802677942213
+"M","Pretty happy","Middle Atlantic","1970's",785,55.3206483439042
+"M","Very happy","Middle Atlantic","1970's",464,32.6990838618746
+"F","Not too happy","Mountain","1970's",0,0
+"F","Pretty happy","Mountain","1970's",0,0
+"F","Very happy","Mountain","1970's",0,0
+"M","Not too happy","Mountain","1970's",0,0
+"M","Pretty happy","Mountain","1970's",0,0
+"M","Very happy","Mountain","1970's",0,0
+"F","Not too happy","New England","1970's",180,14.0955364134691
+"F","Pretty happy","New England","1970's",684,53.5630383711825
+"F","Very happy","New England","1970's",413,32.3414252153485
+"M","Not too happy","New England","1970's",133,12.5353440150801
+"M","Pretty happy","New England","1970's",608,57.3044297832234
+"M","Very happy","New England","1970's",320,30.1602262016965
+"F","Not too happy","Pacific","1970's",0,0
+"F","Pretty happy","Pacific","1970's",0,0
+"F","Very happy","Pacific","1970's",0,0
+"M","Not too happy","Pacific","1970's",0,0
+"M","Pretty happy","Pacific","1970's",0,0
+"M","Very happy","Pacific","1970's",0,0
+"F","Not too happy","South Atlantic","1970's",0,0
+"F","Pretty happy","South Atlantic","1970's",0,0
+"F","Very happy","South Atlantic","1970's",0,0
+"M","Not too happy","South Atlantic","1970's",0,0
+"M","Pretty happy","South Atlantic","1970's",0,0
+"M","Very happy","South Atlantic","1970's",0,0
+"F","Not too happy","West North Central","1970's",115,12.118018967334
+"F","Pretty happy","West North Central","1970's",511,53.8461538461538
+"F","Very happy","West North Central","1970's",323,34.0358271865121
+"M","Not too happy","West North Central","1970's",116,14.0606060606061
+"M","Pretty happy","West North Central","1970's",464,56.2424242424242
+"M","Very happy","West North Central","1970's",245,29.6969696969697
+"F","Not too happy","West South Central","1970's",0,0
+"F","Pretty happy","West South Central","1970's",0,0
+"F","Very happy","West South Central","1970's",0,0
+"M","Not too happy","West South Central","1970's",0,0
+"M","Pretty happy","West South Central","1970's",0,0
+"M","Very happy","West South Central","1970's",0,0
+"F","Not too happy","East North Central","1980's",361,12.9856115107914
+"F","Pretty happy","East North Central","1980's",1496,53.8129496402878
+"F","Very happy","East North Central","1980's",923,33.2014388489209
+"M","Not too happy","East North Central","1980's",232,11.4454859398125
+"M","Pretty happy","East North Central","1980's",1134,55.9447459299457
+"M","Very happy","East North Central","1980's",661,32.6097681302417
+"F","Not too happy","East South Central","1980's",0,0
+"F","Pretty happy","East South Central","1980's",0,0
+"F","Very happy","East South Central","1980's",0,0
+"M","Not too happy","East South Central","1980's",0,0
+"M","Pretty happy","East South Central","1980's",0,0
+"M","Very happy","East South Central","1980's",0,0
+"F","Not too happy","Middle Atlantic","1980's",257,11.4425645592164
+"F","Pretty happy","Middle Atlantic","1980's",1260,56.099732858415
+"F","Very happy","Middle Atlantic","1980's",729,32.4577025823687
+"M","Not too happy","Middle Atlantic","1980's",180,10.8892921960073
+"M","Pretty happy","Middle Atlantic","1980's",983,59.4676346037508
+"M","Very happy","Middle Atlantic","1980's",490,29.643073200242
+"F","Not too happy","Mountain","1980's",0,0
+"F","Pretty happy","Mountain","1980's",0,0
+"F","Very happy","Mountain","1980's",0,0
+"M","Not too happy","Mountain","1980's",0,0
+"M","Pretty happy","Mountain","1980's",0,0
+"M","Very happy","Mountain","1980's",0,0
+"F","Not too happy","New England","1980's",215,13.387297633873
+"F","Pretty happy","New England","1980's",916,57.0361145703611
+"F","Very happy","New England","1980's",475,29.5765877957659
+"M","Not too happy","New England","1980's",171,14.5161290322581
+"M","Pretty happy","New England","1980's",652,55.3480475382003
+"M","Very happy","New England","1980's",355,30.1358234295416
+"F","Not too happy","Pacific","1980's",0,0
+"F","Pretty happy","Pacific","1980's",0,0
+"F","Very happy","Pacific","1980's",0,0
+"M","Not too happy","Pacific","1980's",0,0
+"M","Pretty happy","Pacific","1980's",0,0
+"M","Very happy","Pacific","1980's",0,0
+"F","Not too happy","South Atlantic","1980's",0,0
+"F","Pretty happy","South Atlantic","1980's",0,0
+"F","Very happy","South Atlantic","1980's",0,0
+"M","Not too happy","South Atlantic","1980's",0,0
+"M","Pretty happy","South Atlantic","1980's",0,0
+"M","Very happy","South Atlantic","1980's",0,0
+"F","Not too happy","West North Central","1980's",131,9.64653902798233
+"F","Pretty happy","West North Central","1980's",761,56.0382916053019
+"F","Very happy","West North Central","1980's",466,34.3151693667158
+"M","Not too happy","West North Central","1980's",150,13.1118881118881
+"M","Pretty happy","West North Central","1980's",650,56.8181818181818
+"M","Very happy","West North Central","1980's",344,30.0699300699301
+"F","Not too happy","West South Central","1980's",0,0
+"F","Pretty happy","West South Central","1980's",0,0
+"F","Very happy","West South Central","1980's",0,0
+"M","Not too happy","West South Central","1980's",0,0
+"M","Pretty happy","West South Central","1980's",0,0
+"M","Very happy","West South Central","1980's",0,0
+"F","Not too happy","East North Central","1990's",335,12.646281615704
+"F","Pretty happy","East North Central","1990's",1470,55.4926387315968
+"F","Very happy","East North Central","1990's",844,31.8610796526991
+"M","Not too happy","East North Central","1990's",205,10.3692463328275
+"M","Pretty happy","East North Central","1990's",1116,56.4491654021244
+"M","Very happy","East North Central","1990's",656,33.181588265048
+"F","Not too happy","East South Central","1990's",0,0
+"F","Pretty happy","East South Central","1990's",0,0
+"F","Very happy","East South Central","1990's",0,0
+"M","Not too happy","East South Central","1990's",0,0
+"M","Pretty happy","East South Central","1990's",0,0
+"M","Very happy","East South Central","1990's",0,0
+"F","Not too happy","Middle Atlantic","1990's",197,10.8539944903581
+"F","Pretty happy","Middle Atlantic","1990's",1067,58.7878787878788
+"F","Very happy","Middle Atlantic","1990's",551,30.3581267217631
+"M","Not too happy","Middle Atlantic","1990's",149,10.2475928473177
+"M","Pretty happy","Middle Atlantic","1990's",858,59.009628610729
+"M","Very happy","Middle Atlantic","1990's",447,30.7427785419532
+"F","Not too happy","Mountain","1990's",0,0
+"F","Pretty happy","Mountain","1990's",0,0
+"F","Very happy","Mountain","1990's",0,0
+"M","Not too happy","Mountain","1990's",0,0
+"M","Pretty happy","Mountain","1990's",0,0
+"M","Very happy","Mountain","1990's",0,0
+"F","Not too happy","New England","1990's",203,14.0290255701451
+"F","Pretty happy","New England","1990's",834,57.6364892881824
+"F","Very happy","New England","1990's",410,28.3344851416724
+"M","Not too happy","New England","1990's",121,11.2037037037037
+"M","Pretty happy","New England","1990's",664,61.4814814814815
+"M","Very happy","New England","1990's",295,27.3148148148148
+"F","Not too happy","Pacific","1990's",0,0
+"F","Pretty happy","Pacific","1990's",0,0
+"F","Very happy","Pacific","1990's",0,0
+"M","Not too happy","Pacific","1990's",0,0
+"M","Pretty happy","Pacific","1990's",0,0
+"M","Very happy","Pacific","1990's",0,0
+"F","Not too happy","South Atlantic","1990's",0,0
+"F","Pretty happy","South Atlantic","1990's",0,0
+"F","Very happy","South Atlantic","1990's",0,0
+"M","Not too happy","South Atlantic","1990's",0,0
+"M","Pretty happy","South Atlantic","1990's",0,0
+"M","Very happy","South Atlantic","1990's",0,0
+"F","Not too happy","West North Central","1990's",180,12.0886501007388
+"F","Pretty happy","West North Central","1990's",848,56.9509738079248
+"F","Very happy","West North Central","1990's",461,30.9603760913365
+"M","Not too happy","West North Central","1990's",120,10.3181427343078
+"M","Pretty happy","West North Central","1990's",672,57.7815993121238
+"M","Very happy","West North Central","1990's",371,31.9002579535684
+"F","Not too happy","West South Central","1990's",0,0
+"F","Pretty happy","West South Central","1990's",0,0
+"F","Very happy","West South Central","1990's",0,0
+"M","Not too happy","West South Central","1990's",0,0
+"M","Pretty happy","West South Central","1990's",0,0
+"M","Very happy","West South Central","1990's",0,0
+"F","Not too happy","East North Central","2000's",284,13.4788799240626
+"F","Pretty happy","East North Central","2000's",1150,54.5799715234931
+"F","Very happy","East North Central","2000's",673,31.9411485524442
+"M","Not too happy","East North Central","2000's",212,12.0866590649943
+"M","Pretty happy","East North Central","2000's",959,54.6750285062714
+"M","Very happy","East North Central","2000's",583,33.2383124287343
+"F","Not too happy","East South Central","2000's",0,0
+"F","Pretty happy","East South Central","2000's",0,0
+"F","Very happy","East South Central","2000's",0,0
+"M","Not too happy","East South Central","2000's",0,0
+"M","Pretty happy","East South Central","2000's",0,0
+"M","Very happy","East South Central","2000's",0,0
+"F","Not too happy","Middle Atlantic","2000's",160,11.7647058823529
+"F","Pretty happy","Middle Atlantic","2000's",766,56.3235294117647
+"F","Very happy","Middle Atlantic","2000's",434,31.9117647058824
+"M","Not too happy","Middle Atlantic","2000's",149,13.2209405501331
+"M","Pretty happy","Middle Atlantic","2000's",679,60.2484472049689
+"M","Very happy","Middle Atlantic","2000's",299,26.530612244898
+"F","Not too happy","Mountain","2000's",0,0
+"F","Pretty happy","Mountain","2000's",0,0
+"F","Very happy","Mountain","2000's",0,0
+"M","Not too happy","Mountain","2000's",0,0
+"M","Pretty happy","Mountain","2000's",0,0
+"M","Very happy","Mountain","2000's",0,0
+"F","Not too happy","New England","2000's",161,14.6897810218978
+"F","Pretty happy","New England","2000's",610,55.6569343065693
+"F","Very happy","New England","2000's",325,29.6532846715328
+"M","Not too happy","New England","2000's",83,10.7932379713914
+"M","Pretty happy","New England","2000's",448,58.2574772431729
+"M","Very happy","New England","2000's",238,30.9492847854356
+"F","Not too happy","Pacific","2000's",0,0
+"F","Pretty happy","Pacific","2000's",0,0
+"F","Very happy","Pacific","2000's",0,0
+"M","Not too happy","Pacific","2000's",0,0
+"M","Pretty happy","Pacific","2000's",0,0
+"M","Very happy","Pacific","2000's",0,0
+"F","Not too happy","South Atlantic","2000's",0,0
+"F","Pretty happy","South Atlantic","2000's",0,0
+"F","Very happy","South Atlantic","2000's",0,0
+"M","Not too happy","South Atlantic","2000's",0,0
+"M","Pretty happy","South Atlantic","2000's",0,0
+"M","Very happy","South Atlantic","2000's",0,0
+"F","Not too happy","West North Central","2000's",151,12.8510638297872
+"F","Pretty happy","West North Central","2000's",674,57.3617021276596
+"F","Very happy","West North Central","2000's",350,29.7872340425532
+"M","Not too happy","West North Central","2000's",143,13.8565891472868
+"M","Pretty happy","West North Central","2000's",581,56.2984496124031
+"M","Very happy","West North Central","2000's",308,29.8449612403101
+"F","Not too happy","West South Central","2000's",0,0
+"F","Pretty happy","West South Central","2000's",0,0
+"F","Very happy","West South Central","2000's",0,0
+"M","Not too happy","West South Central","2000's",0,0
+"M","Pretty happy","West South Central","2000's",0,0
+"M","Very happy","West South Central","2000's",0,0
+"F","Not too happy","East North Central","2010's",382,15.086887835703
+"F","Pretty happy","East North Central","2010's",1398,55.2132701421801
+"F","Very happy","East North Central","2010's",752,29.6998420221169
+"M","Not too happy","East North Central","2010's",303,16.02326811211
+"M","Pretty happy","East North Central","2010's",1015,53.6753040719196
+"M","Very happy","East North Central","2010's",573,30.3014278159704
+"F","Not too happy","East South Central","2010's",0,0
+"F","Pretty happy","East South Central","2010's",0,0
+"F","Very happy","East South Central","2010's",0,0
+"M","Not too happy","East South Central","2010's",0,0
+"M","Pretty happy","East South Central","2010's",0,0
+"M","Very happy","East South Central","2010's",0,0
+"F","Not too happy","Middle Atlantic","2010's",168,11.8476727785614
+"F","Pretty happy","Middle Atlantic","2010's",847,59.7320169252468
+"F","Very happy","Middle Atlantic","2010's",403,28.4203102961918
+"M","Not too happy","Middle Atlantic","2010's",180,14.1176470588235
+"M","Pretty happy","Middle Atlantic","2010's",745,58.4313725490196
+"M","Very happy","Middle Atlantic","2010's",350,27.4509803921569
+"F","Not too happy","Mountain","2010's",0,0
+"F","Pretty happy","Mountain","2010's",0,0
+"F","Very happy","Mountain","2010's",0,0
+"M","Not too happy","Mountain","2010's",0,0
+"M","Pretty happy","Mountain","2010's",0,0
+"M","Very happy","Mountain","2010's",0,0
+"F","Not too happy","New England","2010's",167,15.3633854645814
+"F","Pretty happy","New England","2010's",602,55.3817847286109
+"F","Very happy","New England","2010's",318,29.2548298068077
+"M","Not too happy","New England","2010's",117,13.8625592417062
+"M","Pretty happy","New England","2010's",519,61.4928909952607
+"M","Very happy","New England","2010's",208,24.6445497630332
+"F","Not too happy","Pacific","2010's",0,0
+"F","Pretty happy","Pacific","2010's",0,0
+"F","Very happy","Pacific","2010's",0,0
+"M","Not too happy","Pacific","2010's",0,0
+"M","Pretty happy","Pacific","2010's",0,0
+"M","Very happy","Pacific","2010's",0,0
+"F","Not too happy","South Atlantic","2010's",0,0
+"F","Pretty happy","South Atlantic","2010's",0,0
+"F","Very happy","South Atlantic","2010's",0,0
+"M","Not too happy","South Atlantic","2010's",0,0
+"M","Pretty happy","South Atlantic","2010's",0,0
+"M","Very happy","South Atlantic","2010's",0,0
+"F","Not too happy","West North Central","2010's",210,14.6955913226032
+"F","Pretty happy","West North Central","2010's",774,54.1637508747376
+"F","Very happy","West North Central","2010's",445,31.1406578026592
+"M","Not too happy","West North Central","2010's",183,15.2246256239601
+"M","Pretty happy","West North Central","2010's",664,55.2412645590682
+"M","Very happy","West North Central","2010's",355,29.5341098169717
+"F","Not too happy","West South Central","2010's",0,0
+"F","Pretty happy","West South Central","2010's",0,0
+"F","Very happy","West South Central","2010's",0,0
+"M","Not too happy","West South Central","2010's",0,0
+"M","Pretty happy","West South Central","2010's",0,0
+"M","Very happy","West South Central","2010's",0,0
+"F","Not too happy","East North Central","2020's",499,22.5587703435805
+"F","Pretty happy","East North Central","2020's",1259,56.9168173598553
+"F","Very happy","East North Central","2020's",454,20.5244122965642
+"M","Not too happy","East North Central","2020's",352,21.5950920245399
+"M","Pretty happy","East North Central","2020's",884,54.2331288343558
+"M","Very happy","East North Central","2020's",394,24.1717791411043
+"F","Not too happy","East South Central","2020's",0,0
+"F","Pretty happy","East South Central","2020's",0,0
+"F","Very happy","East South Central","2020's",0,0
+"M","Not too happy","East South Central","2020's",0,0
+"M","Pretty happy","East South Central","2020's",0,0
+"M","Very happy","East South Central","2020's",0,0
+"F","Not too happy","Middle Atlantic","2020's",291,22.7699530516432
+"F","Pretty happy","Middle Atlantic","2020's",737,57.6682316118936
+"F","Very happy","Middle Atlantic","2020's",250,19.5618153364632
+"M","Not too happy","Middle Atlantic","2020's",271,23.4226447709594
+"M","Pretty happy","Middle Atlantic","2020's",642,55.4883318928263
+"M","Very happy","Middle Atlantic","2020's",244,21.0890233362143
+"F","Not too happy","Mountain","2020's",0,0
+"F","Pretty happy","Mountain","2020's",0,0
+"F","Very happy","Mountain","2020's",0,0
+"M","Not too happy","Mountain","2020's",0,0
+"M","Pretty happy","Mountain","2020's",0,0
+"M","Very happy","Mountain","2020's",0,0
+"F","Not too happy","New England","2020's",195,23.3253588516746
+"F","Pretty happy","New England","2020's",487,58.2535885167464
+"F","Very happy","New England","2020's",154,18.4210526315789
+"M","Not too happy","New England","2020's",160,23.4260614934114
+"M","Pretty happy","New England","2020's",402,58.8579795021962
+"M","Very happy","New England","2020's",121,17.7159590043924
+"F","Not too happy","Pacific","2020's",0,0
+"F","Pretty happy","Pacific","2020's",0,0
+"F","Very happy","Pacific","2020's",0,0
+"M","Not too happy","Pacific","2020's",0,0
+"M","Pretty happy","Pacific","2020's",0,0
+"M","Very happy","Pacific","2020's",0,0
+"F","Not too happy","South Atlantic","2020's",0,0
+"F","Pretty happy","South Atlantic","2020's",0,0
+"F","Very happy","South Atlantic","2020's",0,0
+"M","Not too happy","South Atlantic","2020's",0,0
+"M","Pretty happy","South Atlantic","2020's",0,0
+"M","Very happy","South Atlantic","2020's",0,0
+"F","Not too happy","West North Central","2020's",226,20
+"F","Pretty happy","West North Central","2020's",677,59.9115044247788
+"F","Very happy","West North Central","2020's",227,20.0884955752212
+"M","Not too happy","West North Central","2020's",246,24.2603550295858
+"M","Pretty happy","West North Central","2020's",563,55.5226824457594
+"M","Very happy","West North Central","2020's",205,20.2169625246548
+"F","Not too happy","West South Central","2020's",0,0
+"F","Pretty happy","West South Central","2020's",0,0
+"F","Very happy","West South Central","2020's",0,0
+"M","Not too happy","West South Central","2020's",0,0
+"M","Pretty happy","West South Central","2020's",0,0
+"M","Very happy","West South Central","2020's",0,0
