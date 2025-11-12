@@ -2,9 +2,14 @@ library(shiny)
 library(bslib)
 library(ggplot2)
 library(leaflet)
+library(dplyr)
 
 # ---- Load Data and Functions ----
 df_clean <- read.csv("df_clean.csv", stringsAsFactors = FALSE)
+df_happy <- read.csv("df_happy.csv", stringsAsFactors = FALSE)
+#df_map <- read.csv("map_data.csv", seperator=";")
+
+source('functions.R')
 
 # ---- Define UI ----
 ui <- fluidPage(

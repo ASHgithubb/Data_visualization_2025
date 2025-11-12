@@ -119,27 +119,45 @@ df <- df %>%
   mutate(
     across(where(is.character), as.factor),
     ID = as.factor(ID),
+    
     year = as.numeric(year),
+    
     age = as.numeric(age),
     age= case_when(age < 0 ~ NA_real_, age>0~age),
+    
     sex_num = as.factor(sex_num),
     sex = case_when(sex_num=="1"~"M", sex_num=="2"~"F", TRUE ~ NA_character_),
+    
     region = as.factor(region),
     region = recode(region, "1" = "New England", "2" = "Middle Atlantic",  "3" = "East North Central",  "4" = "West North Central", "5" = "South Atlantic",  "6" = "East South Central",  "7" = "West South Central",  "8" = "Mountain",  "9" = "Pacific"),
+    
     happiness = as.character(happiness),
     happiness = recode(happiness, "1" = "Very happy", "2" = "Pretty happy", "3" = "Not too happy", "-98" = NA_character_, "-100" = NA_character_, "-99" = NA_character_, "-97" = NA_character_),
+    
     race = as.character(race),
     race = recode(race, "-100" = NA_character_),
+    race = recode(race, "1" = "white", "2" = "Black", "3" = "Other"),
+    
+    
     educ = as.character(educ),
     educ = recode(educ, "-98" = NA_character_, "-99" = NA_character_),
+    educ = recode(educ, "0" = "No formal schooling", "1" = "1st grade", "2" = "2nd grade", "3" = "3rd grade", "4" = "4th grade", "5" = "5th grade", "6" = "6th grade", "7" = "7th grade", "8" = "8th grade", "9" = "9th grade", "10"= "10th grade", "11" = "11th grade", "12" = "12th grade", "13"= "1 year of college", "14" = "2 years of college",  "15"="3 years of collage", "16" = "4 years of college", "17" = "5 years of college", "18" = "6 years of college", "19" = "7 years of college", "20" = "8 or more years of college"),
+    
+    
     work = as.character(work),
     work = recode(work, "-97" = NA_character_, "-98" = NA_character_, "-99" = NA_character_),
+    work = recode(work, "1" = "Working full time", "2" = "Working part time", "3" = "With a job, but not at work because of temporary illness, vacation, strike", "4" = "Unemployed, laid off, looking for work", "5" = "Retired", "6" = "In school", "7" = "Keeping house", "8" = "Other"),
+    
     marital = as.character(marital),
-    marital = recode(marital, "-97" = NA_character_, "-98" = NA_character_, "-99" = NA_character_)
+    marital = recode(marital, "-97" = NA_character_, "-98" = NA_character_, "-99" = NA_character_),
+    marital = recode(marital, "1" = "Married", "2" = "Widowed", "3" = "Divorced", "4" = "Sepreated", "5" = "Never married")
   )
 
 head(df)
 ```
+
+
+
 ### cleaning the data, eg. removing NA's
 ```{r}
 # Creating df_clean with chosen variables
