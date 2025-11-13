@@ -3,13 +3,10 @@ library(bslib)
 library(ggplot2)
 library(leaflet)
 library(dplyr)
-library(htmltools)        # For rich popup content
+library(htmltools)
 
 # ---- Load Data and Functions ----
 df_clean <- read.csv("df_clean.csv", stringsAsFactors = FALSE)
-df_happy <- read.csv("df_happy.csv", stringsAsFactors = FALSE)
-#df_map <- read.csv("map_data.csv", seperator=";")
-
 source('functions.R')
 
 
@@ -96,14 +93,14 @@ ui <- fluidPage(
     card_body(
       div(
         style = "
-    display: grid;
-    grid-template-columns: 60px repeat(6, 1fr); /* first column for row legends, rest equally divide width */
-    grid-template-rows: 30px repeat(3, 110px);   /* first row for column legends, rest for maps */
-    gap: 5px;
-    width: 100%;
-    align-items: center;
-    justify-items: center;
-  ",
+                display: grid;
+                grid-template-columns: 60px repeat(6, 1fr); /* first column for row legends, rest equally divide width */
+                grid-template-rows: 30px repeat(3, 110px);   /* first row for column legends, rest for maps */
+                gap: 5px;
+                width: 100%;
+                align-items: center;
+                justify-items: center;
+        ",
         
         # Column legends (years)
         lapply(1:length(years), function(j) {
@@ -193,7 +190,8 @@ server <- function(input, output) {
   
   
   # Map plot
-  # Create dynamic HTML legend
+  
+  ## Create dynamic HTML legend
   output$shared_legend <- renderUI({
     div(
       style = "width:300px; background:white; padding:10px; border:1px solid #ccc; border-radius:5px;",
@@ -206,7 +204,7 @@ server <- function(input, output) {
           "); margin-bottom:5px; border:1px solid #000;"
         )
       ),
-      # Dynamic tick labels: min, mid, max
+      # Dynamic tick labels
       tags$div(
         style = "display:flex; justify-content: space-between; font-size:12px; font-weight:bold;",
         tags$span("-10%"),
@@ -231,16 +229,16 @@ server <- function(input, output) {
                        "work" = rep(list("map_files/map_happy.shp"), 18))
     
     legend_titles <- switch(variable,
-                           "happiness" = rep(list("pretty happy"), 18),
-                           "educ" = rep(list("pretty happy"), 18),
-                           "race" = rep(list("pretty happy"), 18),
-                           "marital" = rep(list("pretty happy"), 18),
-                           "work" = rep(list("pretty happy"), 18))
+                       "happiness" = rep(list("pretty happy"), 18),
+                       "educ" = rep(list("pretty happy"), 18),
+                       "race" = rep(list("pretty happy"), 18),
+                       "marital" = rep(list("pretty happy"), 18),
+                       "work" = rep(list("pretty happy"), 18))
   
   for (i in seq_along(my_maps_list)) {
     local({
       my_i <- i
-      map_file <- my_maps_list[[my_i]]          # dataframe for this map
+      map_file <- my_maps_list[[my_i]]    
       legend_title_i <- legend_titles[[my_i]]
       output[[paste0("map", my_i)]] <- renderLeaflet({
 
@@ -253,7 +251,7 @@ server <- function(input, output) {
       # Add polygons with hover and popup
       addPolygons(
         fillColor = ~region_palette(percent),
-        color = "black",            # polygon border
+        color = "black", 
         weight = 1,
         opacity = 0.7,
         fillOpacity = 0.9,
