@@ -92,6 +92,8 @@ GSS_ascii %>%
 ```
 
 
+
+
 ## Preprocessing GSS data
 ```{r}
 df_fresh <-read_csv('data/exploring_variables/GSS_data.csv')
@@ -195,6 +197,21 @@ df_clean <- na.omit(df_clean)
 #  filter(!is.na(age), !is.na(sex), !is.na(region))
 
 
+# Adding age ranges after cleaning
+
+# Source - https://stackoverflow.com/questions/51095156/how-to-group-ages-in-specific-range-using-r
+# Posted by Rui Barradas
+# Retrieved 2025-11-12, License - CC BY-SA 4.0
+age_ranges <- cut(df_clean$age, c(18, seq(19, 88, by = 2), 89), 
+                  labels = paste(seq(18, 88, by = 2), "to", seq(19, 89, by = 2)), 
+                  include.lowest = TRUE)
+
+df_clean$age_ranges <- age_ranges
+#df_clean$age_range <- recode(age_ranges, )
+
+
+
+
 # Counting NA's in df_clean (No NA's)
 data.frame(
   #column = names(df_clean),
@@ -204,6 +221,14 @@ data.frame(
 
 write.csv(df_clean, "data_vis_shiny_app/df_clean.csv", row.names = FALSE)
 ```
+
+
+
+
+
+
+
+
 
 ## Exploring GSS data
 
@@ -301,21 +326,21 @@ sex_na <- ggplot(df_NA, aes(x = sex, fill=sex)) +
 #HAPPINESS
 # Happiness including NA's
 happy_w_na <- ggplot(df, aes(x = happiness, fill=sex)) + 
-  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1, size = rel(.80))) + 
   labs(x = "Happiness", title = "Happiness with NA's") + 
   geom_bar(position = position_dodge(width = 0.9))+
   coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
 
 # Happiness NA's removed
 happy_clean <- ggplot(df_clean, aes(x = happiness, fill=sex)) + 
-  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1, size = rel(.80))) + 
   labs(x = "Happiness", title = "Happiness groups with NA's removed") + 
   geom_bar(position = position_dodge(width = 0.9))+
   coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
 
 # Happiness NA's 
 happy_na <- ggplot(df_NA, aes(x = happiness, fill=sex)) + 
-  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1, size = rel(.80))) + 
   labs(x = "Happiness", title = "Happiness removed respones") + 
   geom_bar(position = position_dodge(width = 0.9))+
   coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
@@ -367,21 +392,21 @@ marital_na <- ggplot(df_NA, aes(x = marital, fill=sex)) +
 #EDUCATION
 # educ including NA's
 educ_w_na <- ggplot(df, aes(x = educ, fill=sex)) + 
-  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1, size = rel(.80))) + 
   labs(x = "educ", title = "educ with NA's") + 
   geom_bar(position = position_dodge(width = 0.9))+
   coord_cartesian(ylim = c(0, 15000))  # sets y-axis range
 
 # educ NA's removed
 educ_clean <- ggplot(df_clean, aes(x = educ, fill=sex)) + 
-  theme_minimal() + 
   labs(x = "educ", title = "educ groups with NA's removed") + 
   geom_bar(position = position_dodge(width = 0.9))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1, size = rel(.80)))+
   coord_cartesian(ylim = c(0, 15000))  # sets y-axis range
  
 # educ NA's 
 educ_na <- ggplot(df_NA, aes(x = educ, fill=sex)) + 
-  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1, size = rel(.80))) + 
   labs(x = "educ", title = "educ removed respones") + 
   geom_bar(position = position_dodge(width = 0.9))+
   coord_cartesian(ylim = c(0, 15000))  # sets y-axis range
@@ -403,7 +428,7 @@ work_clean <- ggplot(df_clean, aes(x = work, fill=sex)) +
  
 # work NA's 
 work_na <- ggplot(df_NA, aes(x = work, fill=sex)) + 
-  theme_minimal() + 
+  theme_minimal()+ 
   labs(x = "work", title = "work removed respones") + 
   geom_bar(position = position_dodge(width = 0.9))+
   coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
@@ -437,11 +462,30 @@ histogram_discrete <- function(x, title, df) {
   return(p)
 }
 
-histogram_continous <- function(x, title, df) {
+
+
+histogram_continuous <- function(x, title, df) {
   #all_unique <- unique(!!sym(x))
-  if (x=="age")
-    breaks <- unique(df$age)
-  else if (x=="year")
+  if (x=="age_ranges"){
+    breaks <- unique(df$x)
+  p <- ggplot(df %>%
+                group_by(sex, !!sym(x)) %>% 
+                summarise(count = n(), .groups = "drop") %>% 
+                group_by(sex) %>% 
+                mutate(perc = count / sum(count) * 100)%>%
+                mutate(perc_diverging = ifelse(sex == "F", -perc, perc)),
+              aes(x = !!sym(x), y = perc_diverging, fill = sex)) + 
+    geom_col(position = position_dodge(width = 0.9)) +
+    geom_hline(yintercept = 0, color = "black", linewidth = 0.5) +
+    theme_minimal()+
+    labs(x = x, y = "Percentage", title = title, fill = "Gender") +
+    coord_cartesian(ylim = c(-100, 100))+
+    theme_minimal()+
+    #scale_x_continuous(breaks = breaks) +
+    scale_y_continuous(labels = function(x) abs(x))+
+    coord_flip()}
+  
+  else if (x=="year"){
     breaks <- min(df$year):max(df$year)
   p <- ggplot(df %>%
                 group_by(sex, !!sym(x)) %>% 
@@ -458,7 +502,7 @@ histogram_continous <- function(x, title, df) {
     theme_minimal()+
     scale_x_continuous(breaks = breaks) +
     scale_y_continuous(labels = function(x) abs(x))+
-    coord_flip()
+    coord_flip()}
   return(p)
 }
 
@@ -482,6 +526,12 @@ temp_plot_year <- function(x, df, title){
     )
   
 }
+
+
+histogram_continuous('age_ranges', "Age ranges", df_clean)
+```
+```{r}
+sort(unique(df_clean$year))
 ```
 
 
@@ -628,6 +678,7 @@ region_palette <- colorFactor(
   domain = my_map$region,
   na.color = "transparent")
 ```
+
 
 
 
