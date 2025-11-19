@@ -7,10 +7,8 @@ library(htmltools)        # For rich popup content
 
 # ---- Load Data and Functions ----
 df_clean <- read.csv("df_clean.csv", stringsAsFactors = FALSE)
-df_happy <- read.csv("df_happy.csv", stringsAsFactors = FALSE)
-#df_map <- read.csv("map_data.csv", seperator=";")
-
 source('functions.R')
+
 
 
 # ---- Define UI ----
@@ -89,14 +87,14 @@ ui <- fluidPage(
     card_body(
       div(
         style = "
-    display: grid;
-    grid-template-columns: 60px repeat(6, 1fr); /* first column for row legends, rest equally divide width */
-    grid-template-rows: 30px repeat(3, 110px);   /* first row for column legends, rest for maps */
-    gap: 5px;
-    width: 100%;
-    align-items: center;
-    justify-items: center;
-  ",
+                display: grid;
+                grid-template-columns: 60px repeat(6, 1fr); /* first column for row legends, rest equally divide width */
+                grid-template-rows: 30px repeat(3, 110px);   /* first row for column legends, rest for maps */
+                gap: 5px;
+                width: 100%;
+                align-items: center;
+                justify-items: center;
+        ",
         
         # Column legends (years)
         lapply(1:length(years), function(j) {
