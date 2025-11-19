@@ -223,13 +223,6 @@ write.csv(df_clean, "data_vis_shiny_app/df_clean.csv", row.names = FALSE)
 ```
 
 
-
-
-
-
-
-
-
 ## Exploring GSS data
 
 ### Distribution of Data
@@ -593,75 +586,10 @@ df_new <- df_all%>%
 
 unique(df_clean$region)
 ```
-```{r}
-#Function to create data
-function_filter <- function (df_var, df_data) {
-
-df_sym <- rlang::sym(df_var)  # convert string → symbol
-
-df_simple <- purrr::map_dfr(
-  names(decades),
-  \(decade) {
-    purrr::map_dfr(
-      regions,
-      \(reg) {
-        df_clean %>%
-          filter(year %in% decades[[decade]], region == reg) %>%
-          group_by(sex, !!df_sym) %>%
-          summarise(count = n(), .groups = "drop") %>%
-          group_by(sex) %>%
-          mutate(
-            perc = count / sum(count) * 100,
-            region = reg,
-            year = decade
-          ) 
-      }
-    )
-  }
-)
-# Calculating percentage differences
-df_all <- df_data %>%
-  left_join(df_simple, by = c("sex", df_var, "region", "year")) %>%
-  mutate(
-    count = replace_na(count, 0),
-    perc = replace_na(perc, 0)
-  ) %>%
-  arrange(year, region, sex, !!df_sym)
 
 
-df_dif <- df_all %>%
-  select(-"count")%>%
-  pivot_wider(
-    names_from = sex,
-    values_from = perc
-  ) %>%
-  mutate(
-    percent = `F` - `M`  # difference between male and female percentages
-  ) 
 
-}
 
-```
-
-```{r}
-
-df_happy_final <- function_filter(
-  df_var = "happiness",
-  df_data = df_happy
-)
-
-df_marital_final <- function_filter(
-  df_var = "marital",
-  df_data = df_marital
-)
-
-df_marital_educ <- function_filter(
-  df_var = "educ",
-  df_data = df_educ
-)
-
-head(df_marital_final)
-```
 
 
 # Part 3

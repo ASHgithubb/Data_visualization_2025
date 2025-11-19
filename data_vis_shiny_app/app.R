@@ -85,60 +85,61 @@ ui <- fluidPage(
   
   card(
     card_body(
-      div(
-        style = "
-                display: grid;
-                grid-template-columns: 60px repeat(6, 1fr); /* first column for row legends, rest equally divide width */
-                grid-template-rows: 30px repeat(3, 110px);   /* first row for column legends, rest for maps */
-                gap: 5px;
-                width: 100%;
-                align-items: center;
-                justify-items: center;
-        ",
-        
-        # Column legends (years)
-        lapply(1:length(years), function(j) {
-          div(
-            style = paste0(
-              "grid-column: ", j + 1, ";",  # skip first column
-              "grid-row: 1;",
-              "font-weight:bold; text-align:center;",
-              "font-size:10px;"
-            ),
-            years[j]
-          )
-        }),
-        
-        # Row legends (happiness)
-        lapply(1:length(happiness_levels), function(i) {
-          div(
-            style = paste0(
-              "grid-column: 1;",   # first column
-              "grid-row: ", i + 1, ";",
-              "writing-mode: vertical-rl;",  # vertical text
-              "text-orientation: mixed;",
-              "transform: rotate(180deg);",  # rotate text
-              "font-weight:bold;",
-              "font-size:10px;",
-              "text-align:center;"
-            ),
-            happiness_levels[i]
-          )
-        }),
-        
-        # Maps (18 in total)
-        lapply(1:18, function(i) {
-          row <- ((i - 1) %/% 6) + 2   # +2 because first row is column legend
-          col <- ((i - 1) %% 6) + 2    # +2 because first column is row legend
-          div(
-            style = paste0(
-              "grid-column: ", col, "; grid-row: ", row, ";",
-              "width: 100%; height: 100%;"
-            ),
-            leafletOutput(paste0("map", i), width = "100%", height = "100%")
-          )
-        })
-      )
+      uiOutput("map_grid"),
+    #   div(
+    #     style = "
+    #             display: grid;
+    #             grid-template-columns: 60px repeat(6, 1fr); /* first column for row legends, rest equally divide width */
+    #             grid-template-rows: 30px repeat(3, 110px);   /* first row for column legends, rest for maps */
+    #             gap: 5px;
+    #             width: 100%;
+    #             align-items: center;
+    #             justify-items: center;
+    #     ",
+    #     
+    #     # Column legends (years)
+    #     lapply(1:length(years), function(j) {
+    #       div(
+    #         style = paste0(
+    #           "grid-column: ", j + 1, ";",  # skip first column
+    #           "grid-row: 1;",
+    #           "font-weight:bold; text-align:center;",
+    #           "font-size:10px;"
+    #         ),
+    #         years[j]
+    #       )
+    #     }),
+    #     
+    #     # Row legends (happiness)
+    #     lapply(1:length(happiness_levels), function(i) {
+    #       div(
+    #         style = paste0(
+    #           "grid-column: 1;",   # first column
+    #           "grid-row: ", i + 1, ";",
+    #           "writing-mode: vertical-rl;",  # vertical text
+    #           "text-orientation: mixed;",
+    #           "transform: rotate(180deg);",  # rotate text
+    #           "font-weight:bold;",
+    #           "font-size:10px;",
+    #           "text-align:center;"
+    #         ),
+    #         happiness_levels[i]
+    #       )
+    #     }),
+    #     
+    #     # Maps (18 in total)
+    #     lapply(1:18, function(i) {
+    #       row <- ((i - 1) %/% 6) + 2   # +2 because first row is column legend
+    #       col <- ((i - 1) %% 6) + 2    # +2 because first column is row legend
+    #       div(
+    #         style = paste0(
+    #           "grid-column: ", col, "; grid-row: ", row, ";",
+    #           "width: 100%; height: 100%;"
+    #         ),
+    #         leafletOutput(paste0("map", i), width = "100%", height = "100%")
+    #       )
+    #     })
+    #   )
     ),
     uiOutput("shared_legend")
   )
@@ -184,6 +185,70 @@ server <- function(input, output) {
   
   
   # Map plot
+  ##Create grid
+  output$map_grid <- renderUI({
+    
+    variable <- switch(input$var,
+                       "Happiness"      = "happiness",
+                       "Education"      = "educ",
+                       "Marital Status" = "marital")
+    
+    data_list <- list(
+      happiness = happiness_levels,
+      educ      = educ_levels,
+      marital   = marital_levels
+    )
+    
+    levels_selected <- data_list[[variable]]
+    n_rows <- length(levels_selected)
+    n_cols <- length(years)
+    n_maps <- n_rows * n_cols
+    
+    # Dynamic CSS grid
+    grid_css <- sprintf("
+        display: grid;
+        grid-template-columns: 60px repeat(%d, 1fr);
+        grid-template-rows: 30px repeat(%d, 110px);
+        gap: 5px;
+        width: 100%%;
+        align-items: center;
+        justify-items: center;
+  ", n_cols, n_rows)
+    
+    div(
+      style = grid_css,
+      
+      # Column labels
+      lapply(seq_along(years), function(j) {
+        div(
+          style = paste0("grid-column:", j + 1, "; grid-row:1; font-size:10px; font-weight:bold;"),
+          years[j]
+        )
+      }),
+      
+      # Row labels
+      lapply(seq_along(levels_selected), function(i) {
+        div(
+          style = paste0(
+            "grid-column:1; grid-row:", i + 1, ";",
+            "writing-mode: vertical-rl;",
+            "transform: rotate(180deg); font-size:10px; font-weight:bold; text-align:center;"
+          ),
+          levels_selected[i]
+        )
+      }),
+      
+      # Maps
+      lapply(1:n_maps, function(i) {
+        row <- ((i - 1) %/% n_cols) + 2
+        col <- ((i - 1) %% n_cols) + 2
+        div(
+          style = paste0("grid-column:", col, "; grid-row:", row, "; width:100%; height:100%;"),
+          leafletOutput(paste0("map", i), width = "100%", height = "100%")
+        )
+      })
+    )
+  })
   
   ## Create dynamic HTML legend
   output$shared_legend <- renderUI({
@@ -223,6 +288,12 @@ server <- function(input, output) {
       marital   = list(df = df_marital, levels = marital_levels,   out = "map_files_marital")
     )
     
+    #Defining grid numbers
+    levels_selected <- data_list[[variable]]$levels
+    n_rows <- length(levels_selected)
+    n_cols <- length(years)
+    n_maps <- n_rows * n_cols
+    
     # Step 1 – Create summary dataframe dynamically
     df_final <- function_filter(
       df_var  = variable,
@@ -239,10 +310,17 @@ server <- function(input, output) {
       out_dir = data_list[[variable]]$out
     )
     
-    my_maps_list <- switch(variable,
-                       "happiness" = as.list(sprintf("map_files_happy/map_happiness_%d.shp", 1:18)),
-                       "educ" = as.list(sprintf("map_files_educ/map_educ_%d.shp", 1:120)),
-                       "marital" = as.list(sprintf("map_files_marital/map_marital_%d.shp", 1:30)))
+    #Load the shapefiles for the variable
+    my_maps_list <- as.list(
+      sprintf("%s/map_%s_%d.shp",
+              data_list[[variable]]$out,
+              variable,
+              seq_len(n_maps))
+    )
+    # my_maps_list <- switch(variable,
+    #                    "happiness" = as.list(sprintf("map_files_happy/map_happiness_%d.shp", 1:18)),
+    #                    "educ" = as.list(sprintf("map_files_educ/map_educ_%d.shp", 1:120)),
+    #                    "marital" = as.list(sprintf("map_files_marital/map_marital_%d.shp", 1:30)))
     
     legend_titles <- switch(variable,
                        "happiness" = rep(list("pretty happy"), 18),
@@ -266,8 +344,8 @@ server <- function(input, output) {
       # Add polygons with hover and popup
       addPolygons(
         fillColor = ~region_palette(percent),
-        color = "black", 
-        weight = 1,
+        #color = "black", 
+        #weight = 1,
         opacity = 0.7,
         fillOpacity = 0.9,
         stroke = FALSE,
@@ -279,6 +357,10 @@ server <- function(input, output) {
           bringToFront = TRUE,
           #stroke = TRUE
         ),
+        # label = ~lapply(paste0(
+        #   "Region: ", region, "<br/>",
+        #   "Difference: ", round(percent,1), "%"
+        # ), htmltools::HTML)
         label = ~paste0("Region: ", my_map$region, "<br/>",
                         "Difference: ", round(percent, 1), "%", 
                         sep = "")%>%
