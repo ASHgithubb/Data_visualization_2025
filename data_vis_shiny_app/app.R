@@ -3,7 +3,7 @@ library(bslib)
 library(ggplot2)
 library(leaflet)
 library(dplyr)
-library(htmltools)        # For rich popup content
+library(htmltools)
 
 # ---- Load Data and Functions ----
 df_clean <- read.csv("df_clean.csv", stringsAsFactors = FALSE)
@@ -184,7 +184,8 @@ server <- function(input, output) {
   
   
   # Map plot
-  # Create dynamic HTML legend
+  
+  ## Create dynamic HTML legend
   output$shared_legend <- renderUI({
     div(
       style = "width:300px; background:white; padding:10px; border:1px solid #ccc; border-radius:5px;",
@@ -197,12 +198,12 @@ server <- function(input, output) {
           "); margin-bottom:5px; border:1px solid #000;"
         )
       ),
-      # Dynamic tick labels: min, mid, max
+      # Dynamic tick labels
       tags$div(
         style = "display:flex; justify-content: space-between; font-size:12px; font-weight:bold;",
-        tags$span("-10%"),
+        tags$span("-20%"),
         tags$span("0%"),
-        tags$span("10%")
+        tags$span("20%")
       )
     )
   })
@@ -214,24 +215,45 @@ server <- function(input, output) {
                        "Race" = "race",
                        "Marital Status" = "marital",
                        "Work" = "work")
+    
+    # Map variables → their corresponding dataset and levels
+    data_list <- list(
+      happiness = list(df = df_happy,   levels = happiness_levels, out = "map_files_happy"),
+      educ      = list(df = df_educ,    levels = educ_levels,      out = "map_files_educ"),
+      marital   = list(df = df_marital, levels = marital_levels,   out = "map_files_marital")
+    )
+    
+    # Step 1 – Create summary dataframe dynamically
+    df_final <- function_filter(
+      df_var  = variable,
+      df_data = data_list[[variable]]$df
+    )
+    
+    # Step 2 – Create shapefiles dynamically
+    create_shapefiles(
+      df_var  = variable,
+      df_data = df_final,
+      map_data = map_data,
+      years = years,
+      levels = data_list[[variable]]$levels,
+      out_dir = data_list[[variable]]$out
+    )
+    
     my_maps_list <- switch(variable,
-                       "happiness" = as.list(sprintf("map_files_happy/map_happy_%d.shp", 1:18)),
-                       "educ" = rep(list("map_files/map_happy.shp"), 18),
-                       "race" = rep(list("map_files/map_happy.shp"), 18),
-                       "marital" = rep(list("map_files/map_happy.shp"), 18),
-                       "work" = rep(list("map_files/map_happy.shp"), 18))
+                       "happiness" = as.list(sprintf("map_files_happy/map_happiness_%d.shp", 1:18)),
+                       "educ" = as.list(sprintf("map_files_educ/map_educ_%d.shp", 1:120)),
+                       "marital" = as.list(sprintf("map_files_marital/map_marital_%d.shp", 1:30)))
     
     legend_titles <- switch(variable,
-                           "happiness" = rep(list("pretty happy"), 18),
-                           "educ" = rep(list("pretty happy"), 18),
-                           "race" = rep(list("pretty happy"), 18),
-                           "marital" = rep(list("pretty happy"), 18),
-                           "work" = rep(list("pretty happy"), 18))
+                       "happiness" = rep(list("pretty happy"), 18),
+                       "educ" = rep(list("pretty happy"), 120),
+                       "marital" = rep(list("pretty happy"), 30))
+    
   
   for (i in seq_along(my_maps_list)) {
     local({
       my_i <- i
-      map_file <- my_maps_list[[my_i]]          # dataframe for this map
+      map_file <- my_maps_list[[my_i]]    
       legend_title_i <- legend_titles[[my_i]]
       output[[paste0("map", my_i)]] <- renderLeaflet({
 
@@ -239,24 +261,30 @@ server <- function(input, output) {
     my_map <- sf::read_sf(map_file)
     
     cat("Loading map", "\n")
-    leaflet(my_map, options = leafletOptions(zoomControl = FALSE, dragging = FALSE)) %>% 
+    leaflet(my_map, options = leafletOptions(zoomControl = F, boxZoom = F, doubleClickZoom = F, scrollWheelZoom = F, touchZoom=F, dragging = F)) %>% 
       setView(lng = -98.5, lat = 39.8, zoom = 2) %>% 
       # Add polygons with hover and popup
       addPolygons(
         fillColor = ~region_palette(percent),
-        color = "black",            # polygon border
+        color = "black", 
         weight = 1,
         opacity = 0.7,
         fillOpacity = 0.9,
+        stroke = FALSE,
+        smoothFactor = 0.9,
         highlightOptions = highlightOptions(
           weight = 3,
           color = "#333",
-          fillOpacity = 0.6,
-          bringToFront = TRUE
+          fillOpacity = 0.3,
+          bringToFront = TRUE,
+          #stroke = TRUE
         ),
-        label = ~paste0(region, ": ", round(percent, 1), "%"),  # only shows on hover
+        label = ~paste0("Region: ", my_map$region, "<br/>",
+                        "Difference: ", round(percent, 1), "%", 
+                        sep = "")%>%
+                            lapply(htmltools::HTML),
         labelOptions = labelOptions(
-          style = list("font-weight" = "bold", padding = "3px 8px"),
+          style = list("font-weight" = "normal", padding = "3px 8px"),
           textsize = "10px",
           direction = "auto",
           opacity = 0.9
