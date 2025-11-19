@@ -471,7 +471,7 @@ map_data <- my_map %>%
 st_write(map_data, "data_vis_shiny_app/data_map.shp", delete_dsn = TRUE, quiet = TRUE)
 ```
 
-### Creating happiness data
+### Creating data
 ```{r}
 # Assign the data 
 library(dplyr)
@@ -493,23 +493,150 @@ regions <- c(
 )
 
 # Create a complete grid of all combinations (even if missing in data)
-all_combos <- expand_grid(
+df_happy <- expand_grid(
   sex = unique(df_clean$sex),
   happiness = unique(df_clean$happiness),
   region = regions,
   year = names(decades)
 )
 
-write.csv(all_combos, "data_vis_shiny_app/data_happy.csv", row.names = FALSE)
+write.csv(df_happy, "data_vis_shiny_app/data_happy.csv", row.names = FALSE)
+
+# Create a complete grid of all combinations of educ
+df_educ <- expand_grid(
+  sex = unique(df_clean$sex),
+  educ = unique(df_clean$educ),
+  region = regions,
+  year = names(decades)
+)
+
+write.csv(df_educ, "data_vis_shiny_app/data_educ.csv", row.names = FALSE)
+unique(df_educ$educ)
+
+# Create a complete grid of all combinations of educ
+df_marital <- expand_grid(
+  sex = unique(df_clean$sex),
+  marital = unique(df_clean$marital),
+  region = regions,
+  year = names(decades)
+)
+unique(df_marital$marital)
+
+write.csv(df_marital, "data_vis_shiny_app/data_marital.csv", row.names = FALSE)
 ```
+
+
 # Checking data
 ```{r}
-df_new <- df_happy_all%>%
+df_var <- "marital" #and educ
+df_data <- df_marital
+
+df_sym <- rlang::sym(df_var)  # convert string → symbol
+
+df_simple <- purrr::map_dfr(
+  names(decades),
+  \(decade) {
+    purrr::map_dfr(
+      regions,
+      \(reg) {
+        df_clean %>%
+          filter(year %in% decades[[decade]], region == reg) %>%
+          group_by(sex, !!df_sym) %>%
+          summarise(count = n(), .groups = "drop") %>%
+          group_by(sex) %>%
+          mutate(
+            perc = count / sum(count) * 100,
+            region = reg,
+            year = decade
+          ) 
+      }
+    )
+  }
+)
+
+# Calculating percentage differences
+df_all <- df_data %>%
+  left_join(df_simple, by = c("sex", df_var, "region", "year")) %>%
+  mutate(
+    count = replace_na(count, 0),
+    perc = replace_na(perc, 0)
+  ) %>%
+  arrange(year, region, sex, !!df_sym)
+
+df_new <- df_all%>%
   filter(!count==0)
 
-unique(df_new$region)
+unique(df_clean$region)
+```
+```{r}
+#Function to create data
+function_filter <- function (df_var, df_data) {
+
+df_sym <- rlang::sym(df_var)  # convert string → symbol
+
+df_simple <- purrr::map_dfr(
+  names(decades),
+  \(decade) {
+    purrr::map_dfr(
+      regions,
+      \(reg) {
+        df_clean %>%
+          filter(year %in% decades[[decade]], region == reg) %>%
+          group_by(sex, !!df_sym) %>%
+          summarise(count = n(), .groups = "drop") %>%
+          group_by(sex) %>%
+          mutate(
+            perc = count / sum(count) * 100,
+            region = reg,
+            year = decade
+          ) 
+      }
+    )
+  }
+)
+# Calculating percentage differences
+df_all <- df_data %>%
+  left_join(df_simple, by = c("sex", df_var, "region", "year")) %>%
+  mutate(
+    count = replace_na(count, 0),
+    perc = replace_na(perc, 0)
+  ) %>%
+  arrange(year, region, sex, !!df_sym)
+
+
+df_dif <- df_all %>%
+  select(-"count")%>%
+  pivot_wider(
+    names_from = sex,
+    values_from = perc
+  ) %>%
+  mutate(
+    percent = `F` - `M`  # difference between male and female percentages
+  ) 
+
+}
+
 ```
 
+```{r}
+
+df_happy_final <- function_filter(
+  df_var = "happiness",
+  df_data = df_happy
+)
+
+df_marital_final <- function_filter(
+  df_var = "marital",
+  df_data = df_marital
+)
+
+df_marital_educ <- function_filter(
+  df_var = "educ",
+  df_data = df_educ
+)
+
+head(df_marital_final)
+```
 
 # Part 3
 ## Run the app

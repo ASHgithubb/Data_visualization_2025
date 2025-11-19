@@ -8,7 +8,7 @@ custom_colors <- c(
 # Create numeric palette for -100 to 100
 region_palette <- colorNumeric(
   palette = custom_colors,
-  domain = c(-10,0,10),   # important: fixed domain
+  domain = c(-20,0,20),   # important: fixed domain
   na.color = "transparent"
 )
 
@@ -62,6 +62,8 @@ histogram_continous <- function(x, title, df) {
 
 # Loading data
 df_happy <- read.csv("data_happy.csv", stringsAsFactors = FALSE)
+df_educ <- read.csv("data_educ.csv", stringsAsFactors = FALSE)
+df_marital <- read.csv("data_marital.csv", stringsAsFactors = FALSE)
 df_clean <- read.csv("df_clean.csv", stringsAsFactors = FALSE)
 map_data <- sf::read_sf("data_map.shp")
 
@@ -75,79 +77,94 @@ decades <- list(
   "2010's" = 2010:2019,
   "2020's" = 2020:2029
 )
-regions <- c("New England", "Middle Atlantic", "East North Central", "West North Central",
-  "South Atlantic", "East South Central", "West South Central", "Mountain", "Pacific")
+regions <- c("New England", "Middle Atlantic", "East North Central", "West North Central", "South Atlantic", "East South Central", "West South Central", "Mountain", "Pacific")
 happiness_levels <- c("Not too happy", "Pretty happy", "Very happy")
+educ_levels <- c("4 years of college","10th grade","12th grade", "5 years of college","2 years of college","1 year of college","6th grade","9th grade","11th grade","7th grade","3 years of collage","8 or more years of college", "6 years of college","3rd grade" , "2nd grade","4th grade","5th grade","7 years of college","1st grade","No formal schooling" )
+marital_levels <- c("Never married", "Married", "Divorced", "Widowed", "Sepreated")
 
+#Function to create data
+function_filter <- function (df_var, df_data) {
+  
+  df_sym <- rlang::sym(df_var)  # convert string → symbol
+  
+  df_simple <- purrr::map_dfr(
+    names(decades),
+    \(decade) {
+      purrr::map_dfr(
+        regions,
+        \(reg) {
+          df_clean %>%
+            filter(year %in% decades[[decade]], region == reg) %>%
+            group_by(sex, !!df_sym) %>%
+            summarise(count = n(), .groups = "drop") %>%
+            group_by(sex) %>%
+            mutate(
+              perc = count / sum(count) * 100,
+              region = reg,
+              year = decade
+            ) 
+        }
+      )
+    }
+  )
+  
+  # Calculating percentage differences
+  df_all <- df_data %>%
+    left_join(df_simple, by = c("sex", df_var, "region", "year")) %>%
+    mutate(
+      count = tidyr::replace_na(count, 0),
+      perc  = tidyr::replace_na(perc, 0)
+    ) %>%
+    arrange(year, region, sex, !!df_sym)
+  
+  df_dif <- df_all %>%
+    select(-"count")%>%
+    tidyr::pivot_wider(
+      names_from = sex,
+      values_from = perc
+    ) %>%
+    mutate(percent = `F` - `M`)  # difference between male and female percentages
+  
+  df_dif
+} 
 
-# Filtering happiness data
-df_happy_simple <- purrr::map_dfr(
-  names(decades),
-  \(decade) {
-    purrr::map_dfr(
-      regions,
-      \(reg) {
-        df_clean %>%
-          filter(year %in% decades[[decade]], region == reg) %>%
-          group_by(sex, happiness) %>%
-          summarise(count = n(), .groups = "drop") %>%
-          group_by(sex) %>%
-          mutate(
-            perc = count / sum(count) * 100,
-            region = reg,
-            year = decade
-          )
-      }
-    )
-  }
-)
-
-# Calculating percentage differences
-df_happy_all <- df_happy %>%
-  left_join(df_happy_simple, by = c("sex", "happiness", "region", "year")) %>%
-  mutate(
-    count = replace_na(count, 0),
-    perc = replace_na(perc, 0)
-  ) %>%
-  arrange(year, region, sex, happiness)
-
-df_happy_dif <- df_happy_all %>%
-  select(-"count")%>%
-  pivot_wider(
-    names_from = sex,
-    values_from = perc
-  ) %>%
-  mutate(
-    percent = `F` - `M`  # difference between male and female percentages
-  ) 
 
 # Function to create shapefiles for all year × happiness combinations
-create_shapefiles <- function(df, map_data, years, levels, out_dir = "data_vis_shiny_app/map_files_happy") {
+create_shapefiles <- function(df_var, df_data, map_data, years, levels, out_dir = "data_vis_shiny_app") {
+  
+  df_sym <- rlang::sym(df_var)  # convert string → symbol
   
   # Ensure output directory exists
   if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
   
   file_counter <- 1
   
-  for (h in happiness_levels) {
+  for (h in levels) {
     for (y in years) {
       
       # Filter data for this combination
-      df_filtered <- df %>%
-        filter(year == y, happiness == h)
+      df_filtered <- df_data %>%
+        filter(year == y, !!df_sym == h)
       
-      # Join with map geometry
-      map_joined <- df_filtered %>%
-        select(region, percent, year, happiness) %>%
-        left_join(st_drop_geometry(map_data), by = "region") %>%
-        left_join(map_data, by = "region") %>%
-        st_as_sf()  # Ensure it is an sf object
+      map_joined <- map_data %>%
+        left_join(df_filtered, by = "region") %>%
+        st_as_sf() %>%
+        st_transform(4326)
       
-      # Transform CRS to WGS84 for Leaflet
-      map_joined <- st_transform(map_joined, crs = 4326)
+      # # Join with map geometry
+      # map_joined <- df_filtered %>%
+      #   select(region, percent, year, !!df_sym) %>%
+      #   left_join(st_drop_geometry(map_data), by = "region") %>%
+      #   left_join(map_data, by = "region") %>%
+      #   st_as_sf()  # Ensure it is an sf object
+      # 
+      # # Transform CRS to WGS84 for Leaflet
+      # map_joined <- st_transform(map_joined, crs = 4326)
       
       # Define filename
-      file_name <- file.path(out_dir, paste0("map_happy_", file_counter, ".shp"))
+      #file_name <- file.path(out_dir, paste0("map_happy_", file_counter, ".shp"))
+      
+      file_name <- file.path(out_dir, sprintf("map_%s_%d.shp", df_var, file_counter))
       
       # Write shapefile
       st_write(map_joined, file_name, delete_dsn = TRUE, quiet = TRUE)
@@ -158,13 +175,5 @@ create_shapefiles <- function(df, map_data, years, levels, out_dir = "data_vis_s
     }
   }
   
-  cat("All shapefiles created in WGS84.\n")
+  cat("All shapefiles created.\n")
 }
-
-
-create_shapefiles(
-  df = df_happy_dif,
-  map_data = map_data,
-  years = years,
-  levels = happiness_levels
-)
