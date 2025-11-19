@@ -207,8 +207,16 @@ age_ranges <- cut(df_clean$age, c(18, seq(19, 88, by = 2), 89),
                   include.lowest = TRUE)
 
 df_clean$age_ranges <- age_ranges
-#df_clean$age_range <- recode(age_ranges, )
 
+
+list_year <- unique(df_clean$year)
+
+year_ranges <-cut(df_clean$year, 
+      breaks = seq(min(df_clean$year), max(df_clean$year), by = 2),
+      labels = paste(seq(1972, 2022, by = 2), "to", seq(1973, 2023, by = 2)),
+      include.lowest = TRUE)
+
+df_clean$year_ranges <- year_ranges
 
 
 

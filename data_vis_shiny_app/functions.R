@@ -1,5 +1,7 @@
 library(dplyr)
 library(readr)
+library(leaflet)
+library(sf)
 
 ################## COLORS ################################
 custom_colors <- c(
@@ -18,9 +20,6 @@ df_clean <- read.csv("df_clean.csv", stringsAsFactors = FALSE)
 map_data <- sf::read_sf("data_map.shp")
 
 
-
-library(dplyr)
-library(readr)
 
 ################## COLORS ################################
 custom_colors <- c(
@@ -54,31 +53,67 @@ histogram_discrete <- function(x, title, df) {
 
 
 # continuous values
-histogram_continous <- function(x, title, df) {
-  #all_unique <- unique(!!sym(x))
-  if (x=="age")
-    breaks <- unique(df$age)
-  else if (x=="year")
-    breaks <- min(df$year):max(df$year)
+#histogram_continuous <- function(x, title, df) {
+#  #all_unique <- unique(!!sym(x))
+#  if (x=="age_ranges")
+#    breaks <- unique(df$age_ranges)
+#  else if (x=="year_ranges")
+#    breaks <- min(df$year):max(df$year_ranges)
+#  p <- ggplot(df %>%
+#                group_by(sex, !!sym(x)) %>% 
+#                summarise(count = n(), .groups = "drop") %>% 
+#                group_by(sex) %>%  # Fixed grouping variable
+#                mutate(perc = count / sum(count) * 100)%>%
+#                mutate(perc_diverging = ifelse(sex == "F", -perc, perc)),
+#              aes(x = !!sym(x), y = perc_diverging, fill = sex)) + 
+#    geom_col(position = position_dodge(width = 0.9)) +
+#    geom_hline(yintercept = 0, color = "black", linewidth = 0.5) +
+#    theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1, size = rel(.80))) +
+#    labs(x = x, y = "Percentage", title = title, fill = "Gender") +
+#    coord_cartesian(ylim = c(-100, 100))+
+#    theme_minimal()+
+    #scale_x_continuous(breaks = breaks) +
+    #scale_y_continuous(labels = function(x) abs(x))+
+#    coord_flip()
+#  return(p)
+#}
+histogram_continuous <- function(x, title, df) {
+  # Determine breaks based on x variable
+  if (x == "age_ranges") {
+    breaks <- unique(df$age_ranges)
+  } else if (x == "year_ranges") {
+    breaks <- unique(df$year_ranges)
+  } else {
+    # Default case for other continuous variables
+    breaks <- waiver()  # Let ggplot choose breaks
+  }
+  
   p <- ggplot(df %>%
                 group_by(sex, !!sym(x)) %>% 
                 summarise(count = n(), .groups = "drop") %>% 
-                group_by(sex) %>%  # Fixed grouping variable
-                mutate(perc = count / sum(count) * 100)%>%
+                group_by(sex) %>%
+                mutate(perc = count / sum(count) * 100) %>%
                 mutate(perc_diverging = ifelse(sex == "F", -perc, perc)),
               aes(x = !!sym(x), y = perc_diverging, fill = sex)) + 
-    geom_col(position = position_dodge(width = 0.9)) +
+    geom_col(position = "Identity") +
     geom_hline(yintercept = 0, color = "black", linewidth = 0.5) +
     theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1, size = rel(.80))) +
     labs(x = x, y = "Percentage", title = title, fill = "Gender") +
-    coord_cartesian(ylim = c(-100, 100))+
-    theme_minimal()+
-    scale_x_continuous(breaks = breaks) +
-    scale_y_continuous(labels = function(x) abs(x))+
-    coord_flip()
+    theme_minimal() +
+    scale_y_continuous(
+      labels = function(x) abs(x),
+      limits = c(-10, 10)  # Moved limits here
+    ) +
+    coord_flip()  # Flip coordinates
+  
+  # Add appropriate scale based on axis flip
+  # After coord_flip(), the original x-axis becomes y-axis
+  if (x %in% c("age_ranges", "year_ranges")) {
+    p <- p + scale_x_discrete(breaks = breaks)  # Use discrete scale for categorical breaks
+  }
+  
   return(p)
 }
-
 ################## MAP ################################
 
 # Loading data

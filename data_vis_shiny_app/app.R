@@ -179,7 +179,7 @@ server <- function(input, output) {
   
   # Bar chart for Year (continuous)
   output$bar_year <- renderPlot({
-    histogram_continuous(x = "year", title = "Year", df = df_clean)
+    histogram_continuous(x = "year_ranges", title = "Year ranges", df = df_clean)
   })
   
   
