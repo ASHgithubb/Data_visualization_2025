@@ -10,6 +10,7 @@ df_clean <- read.csv("df_clean.csv", stringsAsFactors = FALSE)
 source('functions.R')
 
 
+
 # ---- Define UI ----
 ui <- fluidPage(
   titlePanel("Interactive Visualization Project"),
@@ -35,55 +36,48 @@ ui <- fluidPage(
         style = "overflow-x:scroll",
         splitLayout(
           card(
+            full_screen=TRUE,
             card_body(
-              div(
                 plotOutput("bar_educ")
-              )
             )
           ),
           card(
+            full_screen=TRUE,
             card_body(
-              div(
                 plotOutput("bar_happy")
-              )
             )
           ),
           card(
+            full_screen=TRUE,
             card_body(
-              div(
                 plotOutput("bar_work")
-              )
             )
           ),
           card(
+            full_screen=TRUE,
             card_body(
-              div(
                 plotOutput("bar_race")
-              )
             )
           ),
           card(
+            full_screen=TRUE,
             card_body(
-              div(
                 plotOutput("bar_marital")
-              )
             )
           ),
           card(
+            full_screen=TRUE,
             card_body(
-              div(
                 plotOutput("bar_age")
-              )
             )
           ),
           card(
+            full_screen=TRUE,
             card_body(
-              div(
                 plotOutput("bar_year")
-              )
             )
           ),
-          cellWidths = "40%"
+          cellWidths = "50%"
         )
       )
     )
@@ -180,12 +174,12 @@ server <- function(input, output) {
   
   # Bar chart for Age (continuous)
   output$bar_age <- renderPlot({
-    histogram_continous(x = "age", title = "Ages", df = df_clean)
+    histogram_continuous(x = "age_ranges", title = "Age ranges", df = df_clean)
   })
   
   # Bar chart for Year (continuous)
   output$bar_year <- renderPlot({
-    histogram_continous(x = "year", title = "Year", df = df_clean)
+    histogram_continuous(x = "year", title = "Year", df = df_clean)
   })
   
   
