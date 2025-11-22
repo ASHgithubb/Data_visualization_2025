@@ -340,7 +340,7 @@ server <- function(input, output) {
     
     cat("Loading map", "\n")
     leaflet(my_map, options = leafletOptions(zoomControl = F, boxZoom = F, doubleClickZoom = F, scrollWheelZoom = F, touchZoom=F, dragging = F)) %>% 
-      setView(lng = -98.5, lat = 39.8, zoom = 2) %>% 
+      setView(lng = -85, lat = 43, zoom = 3) %>% 
       # Add polygons with hover and popup
       addPolygons(
         fillColor = ~region_palette(percent),

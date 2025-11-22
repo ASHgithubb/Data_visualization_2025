@@ -162,6 +162,8 @@ head(df)
 
 ### cleaning the data, eg. removing NA's
 ```{r}
+unique(df$region)
+
 # Creating df_clean with chosen variables
 df_clean <- df %>%
   select(
@@ -448,12 +450,12 @@ us_regions <- list(
   "New England" = c("CT", "ME", "MA", "NH", "RI", "VT"),
   "Middle Atlantic" = c("NJ", "NY", "PA"),
   "East North Central" = c("IL", "IN", "MI", "OH", "WI"),
-  "West North Central" = c("IA", "KS", "MN", "MO", "NE", "ND", "SD"),
-  "South Atlantic" = c("DE", "DC", "FL", "GA", "MD", "NC", "SC", "VA", "WV"),
-  "East South Central" = c("AL", "KY", "MS", "TN"),
-  "West South Central" = c("AR", "LA", "OK", "TX"),
-  "Mountain" = c("AZ", "CO", "ID", "MT", "NV", "NM", "UT", "WY"),
-  "Pacific" = c("AK", "CA", "HI", "OR", "WA")
+  "West North Central" = c("IA", "KS", "MN", "MO", "NE", "ND", "SD")
+  #"South Atlantic" = c("DE", "DC", "FL", "GA", "MD", "NC", "SC", "VA", "WV"),
+  #"East South Central" = c("AL", "KY", "MS", "TN"),
+  #"West South Central" = c("AR", "LA", "OK", "TX"),
+  #"Mountain" = c("AZ", "CO", "ID", "MT", "NV", "NM", "UT", "WY"),
+  #"Pacific" = c("AK", "CA", "HI", "OR", "WA")
 )
 
 # Convert the list to a tidy dataframe
@@ -476,7 +478,13 @@ my_map <- my_map %>%
 #Adding column with region names
 my_map <- my_map %>%
   rename(state=STUSPS)%>%
-  filter(!state %in% c("AS", "GU", "MP", "PR", "VI"))%>%
+  filter(!state %in% c("AS", "GU", "MP", "PR", "VI",
+                       "DE", "DC", "FL", "GA", "MD", "NC", "SC", "VA", "WV",
+                       "AL", "KY", "MS", "TN",
+                       "AR", "LA", "OK", "TX",
+                       "AZ", "CO", "ID", "MT", "NV", "NM", "UT", "WY",
+                       "AK", "CA", "HI", "OR", "WA"
+                       ))%>%
   left_join(region_to_state_df %>% select(state, region), by = "state")
 
 
@@ -506,8 +514,8 @@ decades <- list(
 )
 
 regions <- c(
-  "New England", "Middle Atlantic", "East North Central", "West North Central",
-  "South Atlantic", "East South Central", "West South Central", "Mountain", "Pacific"
+  "New England", "Middle Atlantic", "East North Central", "West North Central"
+  #, "South Atlantic", "East South Central", "West South Central", "Mountain", "Pacific"
 )
 
 # Create a complete grid of all combinations (even if missing in data)
@@ -587,10 +595,104 @@ df_new <- df_all%>%
 unique(df_clean$region)
 ```
 
+#Inspecting distributions for percentage difference for all variables
+```{r}
+perc_happy <- function_filter(
+      df_var  = "happiness",
+      df_data = df_happy
+    )
+
+perc_educ <- function_filter(
+      df_var  = "educ",
+      df_data = df_educ
+    )
+
+perc_marital <- function_filter(
+      df_var  = "marital",
+      df_data = df_marital
+    )
 
 
+perc_happy <- perc_happy%>%
+  #filter(percent !=0)
+  filter(region== "Middle Atlantic" | region=="East North Central" | region=="New England" | region=="West North Central")
+
+perc_educ <- perc_educ%>%
+  #filter(percent !=0)
+  filter(region== "Middle Atlantic" | region=="East North Central" | region=="New England" | region=="West North Central")
+
+perc_marital <- perc_marital%>%
+  #filter(percent !=0)
+  filter(region== "Middle Atlantic" | region=="East North Central" | region=="New England" | region=="West North Central")
 
 
+library(ggplot2)
+
+happy_plot <- ggplot(perc_happy, aes(x = percent)) +
+  geom_histogram(binwidth = 0.1, color = "black", fill = "steelblue") +
+  scale_x_continuous(breaks = seq(floor(min(perc_happy$percent)),
+                                  ceiling(max(perc_happy$percent)),
+                                  by = 1)) +
+  geom_density(alpha = 0.3) +
+  labs(
+    title = "Values for the variable Happiness",
+    x = "Percentage difference between female and male scores",
+    y = "Count"
+  ) +
+  theme_minimal()
+
+educ_plot <- ggplot(perc_educ, aes(x = percent)) +
+  geom_histogram(binwidth = 0.1, color = "black", fill = "steelblue") +
+  scale_x_continuous(breaks = seq(floor(min(perc_educ$percent)),
+                                  ceiling(max(perc_educ$percent)),
+                                  by = 1)) +
+  geom_density(alpha = 0.3) +
+  labs(
+    title = "Values for the variable Educational level",
+    x = "Percentage difference between female and male scores",
+    y = "Count"
+  ) +
+  theme_minimal()
+
+marital_plot <- ggplot(perc_marital, aes(x = percent)) +
+  geom_histogram(binwidth = 0.1, color = "black", fill = "steelblue") +
+  scale_x_continuous(breaks = seq(floor(min(perc_marital$percent)),
+                                  ceiling(max(perc_marital$percent)),
+                                  by = 1)) +
+  geom_density(alpha = 0.3) +
+  labs(
+    title = "Values for the variable Marital",
+    x = "Percentage difference between female and male scores",
+    y = "Count"
+  ) +
+  theme_minimal()
+
+list_all <- c(
+  perc_happy$percent,
+  perc_educ$percent,
+  perc_marital$percent
+)
+
+list_all <- as.data.frame(list_all)
+
+all_plot <- ggplot(list_all, aes(x = list_all)) +
+  geom_histogram(binwidth = 0.1, color = "black", fill = "steelblue") +
+  scale_x_continuous(breaks = seq(floor(min(list_all)),
+                                  ceiling(max(list_all)),
+                                  by = 1)) +
+  geom_density(alpha = 0.3) +
+  labs(
+    title = "Values for all variables combined",
+    x = "Percentage difference between female and male scores",
+    y = "Count"
+  ) +
+  theme_minimal()
+
+happy_plot
+educ_plot
+marital_plot
+all_plot
+```
 
 # Part 3
 ## Run the app
