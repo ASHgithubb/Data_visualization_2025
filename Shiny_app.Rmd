@@ -138,7 +138,7 @@ df <- df %>%
     
     race = as.character(race),
     race = recode(race, "-100" = NA_character_),
-    race = recode(race, "1" = "white", "2" = "Black", "3" = "Other"),
+    race = recode(race, "1" = "White", "2" = "Black", "3" = "Other"),
     
     
     educ = as.character(educ),
@@ -148,7 +148,7 @@ df <- df %>%
     
     work = as.character(work),
     work = recode(work, "-97" = NA_character_, "-98" = NA_character_, "-99" = NA_character_),
-    work = recode(work, "1" = "Working full time", "2" = "Working part time", "3" = "With a job, but not at work because of temporary illness, vacation, strike", "4" = "Unemployed, laid off, looking for work", "5" = "Retired", "6" = "In school", "7" = "Keeping house", "8" = "Other"),
+    work = recode(work, "1" = "Working full time", "2" = "Working part time", "3" = "With a job, but home", "4" = "Unemployed", "5" = "Retired", "6" = "In school", "7" = "Keeping house", "8" = "Other"),
     
     marital = as.character(marital),
     marital = recode(marital, "-97" = NA_character_, "-98" = NA_character_, "-99" = NA_character_),

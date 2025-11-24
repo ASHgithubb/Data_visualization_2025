@@ -29,7 +29,7 @@ ui <- fluidPage(
   ),
   
   accordion(
-    open = FALSE,
+    open = TRUE,
     accordion_panel(
       title = "Histograms",
       wellPanel(
@@ -77,7 +77,7 @@ ui <- fluidPage(
                 plotOutput("bar_year")
             )
           ),
-          cellWidths = "50%"
+          cellWidths = "30%"
         )
       )
     )
