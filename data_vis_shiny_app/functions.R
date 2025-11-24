@@ -35,7 +35,7 @@ region_palette <- colorNumeric(
 ################## HISTOGRAM PLOTS ################################
 
 # Discrete values
-histogram_discrete <- function(x, title, df, adjust_label=FALSE, flip=TRUE) {
+histogram_discrete <- function(x, title, df, adjust_label=TRUE, flip=FALSE) {
   p <- ggplot(df %>%
                 group_by(sex, !!sym(x)) %>% 
                 summarise(count = n(), .groups = "drop") %>% 
@@ -51,7 +51,8 @@ histogram_discrete <- function(x, title, df, adjust_label=FALSE, flip=TRUE) {
   } else {
     p <- p + coord_cartesian(ylim = c(0, 100))
     if (adjust_label) {
-      p <- p + theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust = .95, size = 10))
+      p <- p  + scale_x_discrete(labels=scales::label_wrap(15))
+        #theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust = .95))
     }
   }
     

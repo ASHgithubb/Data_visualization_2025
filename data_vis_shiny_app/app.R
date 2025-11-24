@@ -77,7 +77,7 @@ ui <- fluidPage(
                 plotOutput("bar_year")
             )
           ),
-          cellWidths = "30%"
+          cellWidths = "40%"
         )
       )
     )
