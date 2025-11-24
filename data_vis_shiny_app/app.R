@@ -141,7 +141,7 @@ server <- function(input, output) {
     grid_css <- sprintf("
       display:grid;
       grid-template-columns: 60px repeat(%d, 1fr);
-      grid-template-rows: 40px repeat(%d, 120px);
+      grid-template-rows: 40px repeat(%d, 180px); #40 px is the labels row
       gap: 5px;
       width: 100%%;
     ", n_cols, n_rows)
@@ -152,7 +152,7 @@ server <- function(input, output) {
       # Column labels
       lapply(seq_along(years), function(j) {
         div(
-          style = paste0("grid-column:", j+1, "; grid-row:1; text-align:center; font-size:10px; font-weight:bold;"),
+          style = paste0("grid-column:", j+1, "; grid-row:1; text-align:center; font-size:15px; font-weight:bold;"),
           years[j]
         )
       }),
@@ -162,7 +162,7 @@ server <- function(input, output) {
         div(
           style = paste0(
             "grid-column:1; grid-row:", i+1, ";",
-            "writing-mode:vertical-rl; transform:rotate(180deg); font-size:10px; font-weight:bold;"
+            "writing-mode:vertical-rl; transform:rotate(180deg); font-size:15px; font-weight:bold;"
           ),
           levels_selected[i]
         )

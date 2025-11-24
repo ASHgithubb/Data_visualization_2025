@@ -8,6 +8,7 @@ library(tidyr)
 library(purrr)
 library(rlang)
 library(tools)
+library(scales)
 
 ################## COLORS ################################
 custom_colors <- c(
@@ -74,7 +75,7 @@ histogram_continuous <- function(x, title, df) {
   return(p)
 }
 
-################## MAP LEVELS ################################
+################## MAP ################################
 
 years <- c("1970's","1980's","1990's","2000's","2010's","2020's")
 
@@ -114,12 +115,16 @@ level_list <- list(
 
 
 ################## lOADING MAP ################################
+# Load states as sf
+states_map <- maps::map("state", plot = FALSE, fill = TRUE)
+states_map_sf <- st_as_sf(states_map) %>%
+  rename(geometry = geom) %>%  # may be redundant, but safe
+  mutate(
+    state_full = tools::toTitleCase(ID),
+    state = state.abb[match(state_full, state.name)]
+  )
 
-# Load US states as sf
-states_map <- st_as_sf(map("state", plot = FALSE, fill = TRUE)) %>%
-  mutate(state = tools::toTitleCase(ID)) %>%
-  mutate(state = state.abb[match(state, state.name)])
-
+# Define region mapping
 region_states <- tibble(
   region = rep(names(us_regions), lengths(us_regions)),
   state  = unlist(us_regions)
@@ -128,39 +133,64 @@ region_states <- tibble(
 # Disable s2 to avoid geometry errors
 sf::sf_use_s2(FALSE)
 
-# Merge states into regions safely
-map_data_gg <- states_map %>%
+# Merge states into regions
+map_data_gg <- states_map_sf %>%
   inner_join(region_states, by = "state") %>%
-  mutate(geometry = sf::st_make_valid(geom)) %>% 
+  mutate(geometry = st_make_valid(geometry)) %>%   # important: fix invalid polygons
   group_by(region) %>%
-  summarise(geometry = sf::st_union(geometry), .groups = "drop") %>%
+  summarise(geometry = st_union(geometry), .groups = "drop") %>%
   st_as_sf()
 
-#Reenable s2
-sf_use_s2(TRUE)
+# Re-enable s2
+sf::sf_use_s2(TRUE)
 
 
-################## MAP PLOT FUNCTION ################################
+### MAP PLOT FUNCTION --> DESIGN MAPS HERE ################################
+
+#creates an interactive choropleth map using ggplot2 and ggiraph
 plot_map_ggiraph <- function(map_df) {
   map_df <- map_df %>%
-    mutate(tooltip = sprintf("<b>%s</b><br>Difference: %.1f%%", region, percent))
+    #The textbox
+    mutate(tooltip = sprintf("<div 
+                   style='font-size:10px; 
+                   color: black;
+                   padding:2px; 
+                   background-color: rgba(211,211,211,0.8); 
+                   border:1px solid black;
+                   border-radius:2px;'>   
+                             <b>%s</b>          
+                             <br>
+                             Difference: %.1f%%
+       </div>",
+                             region, percent) #what fills in the % values
+           ) 
+  # map_df <- map_df %>%
+  #   mutate(fill_color = region_palette$palette(percent)) #changes the color when hovering
   
   gg <- ggplot() +
-    geom_sf_interactive(
+    geom_sf_interactive( #from the ggiraph package
       data = map_df,
-      aes(geometry = geometry, fill = percent, tooltip = tooltip, data_id = region),
-      color = "white",
-      size  = 0.3
+      aes(
+        geometry = geometry, 
+        fill = percent, #Colors the perc values from the dataframe
+        tooltip = tooltip, 
+        data_id = region), #identifyier for interactivity
+      color = "black", #outline color
+      size  = 1 #line thickness of borders
     ) +
-    region_palette +
-    theme_void() +
-    theme(legend.position = "none")
+    region_palette + #applies defined color scale
+    theme_void() + #a very clean theme
+    theme(legend.position = "none") #hides the default legend, as we're using a custom legend elsewhere
   
+  #Convert ggplot to interactive plot
   girafe(
     ggobj = gg,
     options = list(
-      opts_hover(css = "fill-opacity:0.5;cursor:pointer;"),
-      opts_sizing(rescale = TRUE)
+      opts_hover(css = #when hovering
+                   "fill:rgba(211,211,211,0.8);  #region color when hovering
+                    stroke:black;
+                    stroke-width:1px;
+                    cursor:pointer;") #cursor changes to pointer (like a button)
     )
   )
 }
