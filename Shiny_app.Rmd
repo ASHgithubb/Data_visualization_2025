@@ -428,76 +428,20 @@ work_na <- ggplot(df_NA, aes(x = work, fill=sex)) +
   geom_bar(position = position_dodge(width = 0.9))+
   coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
 
-grid.arrange(year_w_na, year_clean, year_na, ncol=2)
-grid.arrange(age_w_na, age_clean, age_na, ncol=2)
-grid.arrange(region_w_na, region_clean, region_na, ncol=2)
-grid.arrange(sex_w_na, sex_clean, sex_na, ncol=2)
-grid.arrange(happy_w_na, happy_clean, happy_na, ncol=2)
-grid.arrange(race_w_na, race_clean, race_na, ncol=2)
-grid.arrange(marital_w_na, marital_clean, marital_na, ncol=2)
-grid.arrange(educ_w_na, educ_clean, educ_na, ncol=2)
-grid.arrange(work_w_na, work_clean, work_na, ncol=2)
+# grid.arrange(year_w_na, year_clean, year_na, ncol=2)
+# grid.arrange(age_w_na, age_clean, age_na, ncol=2)
+# grid.arrange(region_w_na, region_clean, region_na, ncol=2)
+# grid.arrange(sex_w_na, sex_clean, sex_na, ncol=2)
+# grid.arrange(happy_w_na, happy_clean, happy_na, ncol=2)
+# grid.arrange(race_w_na, race_clean, race_na, ncol=2)
+# grid.arrange(marital_w_na, marital_clean, marital_na, ncol=2)
+# grid.arrange(educ_w_na, educ_clean, educ_na, ncol=2)
+# grid.arrange(work_w_na, work_clean, work_na, ncol=2)
 ```
 
 # Part 2 -building the app
 
-## Functions for the map
-
-### Creating map
-```{r}
-# Define mapping of regions to state abbreviations
-us_regions <- list(
-  "New England" = c("CT", "ME", "MA", "NH", "RI", "VT"),
-  "Middle Atlantic" = c("NJ", "NY", "PA"),
-  "East North Central" = c("IL", "IN", "MI", "OH", "WI"),
-  "West North Central" = c("IA", "KS", "MN", "MO", "NE", "ND", "SD")
-  #"South Atlantic" = c("DE", "DC", "FL", "GA", "MD", "NC", "SC", "VA", "WV"),
-  #"East South Central" = c("AL", "KY", "MS", "TN"),
-  #"West South Central" = c("AR", "LA", "OK", "TX"),
-  #"Mountain" = c("AZ", "CO", "ID", "MT", "NV", "NM", "UT", "WY"),
-  #"Pacific" = c("AK", "CA", "HI", "OR", "WA")
-)
-
-# Convert the list to a tidy dataframe
-region_to_state_df <- tibble(
-  region = rep(names(us_regions), lengths(us_regions)),
-  state = unlist(us_regions)
-)
-
-library(sf)
-library(leaflet)
-
-# Loading map
-my_map <- read_sf("data_vis_shiny_app/us_states/cb_2024_us_state_500k.shp")
-
-# Simplify polygons to speed up rendering (the higher the faster)
-my_map <- my_map %>%
-  st_simplify(my_map, dTolerance = 20000) %>%# adjust tolerance
-  sf::st_transform(crs = 4326)
-
-#Adding column with region names
-my_map <- my_map %>%
-  rename(state=STUSPS)%>%
-  filter(!state %in% c("AS", "GU", "MP", "PR", "VI",
-                       "DE", "DC", "FL", "GA", "MD", "NC", "SC", "VA", "WV",
-                       "AL", "KY", "MS", "TN",
-                       "AR", "LA", "OK", "TX",
-                       "AZ", "CO", "ID", "MT", "NV", "NM", "UT", "WY",
-                       "AK", "CA", "HI", "OR", "WA"
-                       ))%>%
-  left_join(region_to_state_df %>% select(state, region), by = "state")
-
-
-#Converting states to regions 
-map_data <- my_map %>%
-  group_by(region) %>%
-  summarise(geometry = st_union(geometry))  # merge polygons
-
-# Write shapefile
-st_write(map_data, "data_vis_shiny_app/data_map.shp", delete_dsn = TRUE, quiet = TRUE)
-```
-
-### Creating data
+### Creating data files
 ```{r}
 # Assign the data 
 library(dplyr)

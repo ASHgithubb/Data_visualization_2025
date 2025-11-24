@@ -1,5 +1,13 @@
 library(dplyr)
 library(readr)
+library(ggplot2)
+library(ggiraph)
+library(maps)
+library(sf)
+library(tidyr)
+library(purrr)
+library(rlang)
+library(tools)
 
 ################## COLORS ################################
 custom_colors <- c(
@@ -7,11 +15,11 @@ custom_colors <- c(
   #'#67001f', '#b2182b', '#d6604d', '#f4a582', '#fddbc7','#f7f7f7', '#d1e5f0',  '#92c5de', '#4393c3', '#2166ac', '#053061'
   )
 
-# Create numeric palette for -100 to 100
-region_palette <- colorNumeric(
-  palette = custom_colors,
-  domain = c(-20,0,20),   # important: fixed domain
-  na.color = "transparent"
+# Create color palette 
+region_palette <- scale_fill_gradientn(
+  colours = custom_colors,
+  limits = c(-20, 20),
+  name = "Percent"
 )
 
 # Loading data
@@ -19,7 +27,6 @@ df_happy <- read.csv("data_happy.csv", stringsAsFactors = FALSE)
 df_educ <- read.csv("data_educ.csv", stringsAsFactors = FALSE)
 df_marital <- read.csv("data_marital.csv", stringsAsFactors = FALSE)
 df_clean <- read.csv("df_clean.csv", stringsAsFactors = FALSE)
-map_data <- sf::read_sf("data_map.shp")
 
 ################## HISTOGRAM PLOTS ################################
 
@@ -67,10 +74,10 @@ histogram_continuous <- function(x, title, df) {
   return(p)
 }
 
-################## MAP ################################
+################## MAP LEVELS ################################
 
-# Define levels
-years <- c("1970's", "1980's", "1990's", "2000's", "2010's", "2020's")
+years <- c("1970's","1980's","1990's","2000's","2010's","2020's")
+
 decades <- list(
   "1970's" = 1970:1979,
   "1980's" = 1980:1989,
@@ -79,22 +86,95 @@ decades <- list(
   "2010's" = 2010:2019,
   "2020's" = 2020:2029
 )
-regions <- c("New England", "Middle Atlantic", "East North Central", "West North Central"
-             #, "South Atlantic", "East South Central", "West South Central", "Mountain", "Pacific"
-             )
-happiness_levels <- c("Not too happy", "Pretty happy", "Very happy")
-educ_levels <- c("4 years of college","10th grade","12th grade", "5 years of college","2 years of college","1 year of college","6th grade","9th grade","11th grade","7th grade","3 years of collage","8 or more years of college", "6 years of college","3rd grade" , "2nd grade","4th grade","5th grade","7 years of college","1st grade","No formal schooling" )
-marital_levels <- c("Never married", "Married", "Divorced", "Widowed", "Sepreated")
 
-#Function to create data
-function_filter <- function (df_var, df_data) {
+us_regions <- list(
+  "New England"        = c("CT","ME","MA","NH","RI","VT"),
+  "Middle Atlantic"    = c("NJ","NY","PA"),
+  "East North Central" = c("IL","IN","MI","OH","WI"),
+  "West North Central" = c("IA","KS","MN","MO","NE","ND","SD")
+)
+
+regions <- names(us_regions)
+
+happiness_levels <- c("Not too happy", "Pretty happy", "Very happy")
+educ_levels <- unique(df_educ$educ)
+marital_levels <- unique(df_marital$marital)
+
+data_list <- list(
+  happiness = df_happy,
+  educ      = df_educ,
+  marital   = df_marital
+)
+
+level_list <- list(
+  happiness = happiness_levels,
+  educ      = educ_levels,
+  marital   = marital_levels
+)
+
+
+################## lOADING MAP ################################
+
+# Load US states as sf
+states_map <- st_as_sf(map("state", plot = FALSE, fill = TRUE)) %>%
+  mutate(state = tools::toTitleCase(ID)) %>%
+  mutate(state = state.abb[match(state, state.name)])
+
+region_states <- tibble(
+  region = rep(names(us_regions), lengths(us_regions)),
+  state  = unlist(us_regions)
+)
+
+# Disable s2 to avoid geometry errors
+sf::sf_use_s2(FALSE)
+
+# Merge states into regions safely
+map_data_gg <- states_map %>%
+  inner_join(region_states, by = "state") %>%
+  mutate(geometry = sf::st_make_valid(geom)) %>% 
+  group_by(region) %>%
+  summarise(geometry = sf::st_union(geometry), .groups = "drop") %>%
+  st_as_sf()
+
+#Reenable s2
+sf_use_s2(TRUE)
+
+
+################## MAP PLOT FUNCTION ################################
+plot_map_ggiraph <- function(map_df) {
+  map_df <- map_df %>%
+    mutate(tooltip = sprintf("<b>%s</b><br>Difference: %.1f%%", region, percent))
   
-  df_sym <- rlang::sym(df_var)  # convert string → symbol
+  gg <- ggplot() +
+    geom_sf_interactive(
+      data = map_df,
+      aes(geometry = geometry, fill = percent, tooltip = tooltip, data_id = region),
+      color = "white",
+      size  = 0.3
+    ) +
+    region_palette +
+    theme_void() +
+    theme(legend.position = "none")
   
-  df_simple <- purrr::map_dfr(
+  girafe(
+    ggobj = gg,
+    options = list(
+      opts_hover(css = "fill-opacity:0.5;cursor:pointer;"),
+      opts_sizing(rescale = TRUE)
+    )
+  )
+}
+
+################## FILTER FUNCTION ################################
+function_filter <- function(df_var, df_data) {
+  
+  df_sym <- sym(df_var)
+  
+  # Aggregate data for each decade and region
+  df_simple <- map_dfr(
     names(decades),
     \(decade) {
-      purrr::map_dfr(
+      map_dfr(
         regions,
         \(reg) {
           df_clean %>%
@@ -103,81 +183,26 @@ function_filter <- function (df_var, df_data) {
             summarise(count = n(), .groups = "drop") %>%
             group_by(sex) %>%
             mutate(
-              perc = count / sum(count) * 100,
+              perc   = count / sum(count) * 100,
               region = reg,
-              year = decade
-            ) 
+              year   = decade
+            )
         }
       )
     }
   )
   
-  # Calculating percentage differences
+  # Merge with external data and compute difference
   df_all <- df_data %>%
     left_join(df_simple, by = c("sex", df_var, "region", "year")) %>%
     mutate(
-      count = tidyr::replace_na(count, 0),
-      perc  = tidyr::replace_na(perc, 0)
+      count = replace_na(count, 0),
+      perc  = replace_na(perc, 0)
     ) %>%
     arrange(year, region, sex, !!df_sym)
   
-  df_dif <- df_all %>%
-    select(-"count")%>%
-    tidyr::pivot_wider(
-      names_from = sex,
-      values_from = perc
-    ) %>%
-    mutate(percent = `F` - `M`)  # difference between male and female percentages
-  
-  df_dif
-} 
-
-
-# Function to create shapefiles for all year × happiness combinations
-create_shapefiles <- function(df_var, df_data, map_data, years, levels, out_dir = "data_vis_shiny_app") {
-  
-  df_sym <- rlang::sym(df_var)  # convert string → symbol
-  
-  # Ensure output directory exists
-  if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
-  
-  file_counter <- 1
-  
-  for (h in levels) {
-    for (y in years) {
-      
-      # Filter data for this combination
-      df_filtered <- df_data %>%
-        filter(year == y, !!df_sym == h)
-      
-      map_joined <- map_data %>%
-        left_join(df_filtered, by = "region") %>%
-        st_as_sf() %>%
-        st_transform(4326)
-      
-      # # Join with map geometry
-      # map_joined <- df_filtered %>%
-      #   select(region, percent, year, !!df_sym) %>%
-      #   left_join(st_drop_geometry(map_data), by = "region") %>%
-      #   left_join(map_data, by = "region") %>%
-      #   st_as_sf()  # Ensure it is an sf object
-      # 
-      # # Transform CRS to WGS84 for Leaflet
-      # map_joined <- st_transform(map_joined, crs = 4326)
-      
-      # Define filename
-      #file_name <- file.path(out_dir, paste0("map_happy_", file_counter, ".shp"))
-      
-      file_name <- file.path(out_dir, sprintf("map_%s_%d.shp", df_var, file_counter))
-      
-      # Write shapefile
-      st_write(map_joined, file_name, delete_dsn = TRUE, quiet = TRUE)
-      
-      cat("Written:", file_name, "\n")
-      
-      file_counter <- file_counter + 1
-    }
-  }
-  
-  cat("All shapefiles created.\n")
+  df_all %>%
+    select(-count) %>%
+    pivot_wider(names_from = sex, values_from = perc) %>%
+    mutate(percent = F - M)
 }
