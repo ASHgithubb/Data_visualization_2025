@@ -38,13 +38,37 @@ ui <- fluidPage(
           card(
             full_screen=TRUE,
             card_body(
+              plotOutput("bar_year")
+            )
+          ),
+          card(
+            full_screen=TRUE,
+            card_body(
+              plotOutput("bar_age")
+            )
+          ),
+          card(
+            full_screen=TRUE,
+            card_body(
+              plotOutput("bar_happy")
+            )
+          ),
+          card(
+            full_screen=TRUE,
+            card_body(
                 plotOutput("bar_educ")
             )
           ),
           card(
             full_screen=TRUE,
             card_body(
-                plotOutput("bar_happy")
+              plotOutput("bar_race")
+            )
+          ),
+          card(
+            full_screen=TRUE,
+            card_body(
+              plotOutput("bar_marital")
             )
           ),
           card(
@@ -53,31 +77,7 @@ ui <- fluidPage(
                 plotOutput("bar_work")
             )
           ),
-          card(
-            full_screen=TRUE,
-            card_body(
-                plotOutput("bar_race")
-            )
-          ),
-          card(
-            full_screen=TRUE,
-            card_body(
-                plotOutput("bar_marital")
-            )
-          ),
-          card(
-            full_screen=TRUE,
-            card_body(
-                plotOutput("bar_age")
-            )
-          ),
-          card(
-            full_screen=TRUE,
-            card_body(
-                plotOutput("bar_year")
-            )
-          ),
-          cellWidths = "40%"
+          cellWidths = "35%"
         )
       )
     )
@@ -148,8 +148,15 @@ ui <- fluidPage(
 server <- function(input, output) {
   
   # Bar chart for Box 1 (Education Groups)
+  education_levels <- c("3rd grade or less", 
+                        "4th to 7th grade", 
+                        "8th to 11th grade", 
+                        "12th to 3 yrs of college", 
+                        "4 to 7 yrs of college", 
+                        "8+ yrs of college")
+  
   output$bar_educ <- renderPlot({
-    histogram_discrete(x = "educ", title = "Education Groups", df = df_clean)
+    histogram_discrete(x = "educ", title = "Education Groups", df = df_clean, levels=education_levels)
   })
   
   # Bar chart for Box 2 (Happiness Groups)
@@ -158,8 +165,9 @@ server <- function(input, output) {
   })
   
   # Bar chart for Box 3 (Race Groups)
+  race_levels <- c("White", "Black", "Other")
   output$bar_race <- renderPlot({
-    histogram_discrete(x = "race", title = "Race Groups", df = df_clean)
+    histogram_discrete(x = "race", title = "Race Groups", df = df_clean, levels=race_levels)
   })
   
   # Bar chart for Box 4 (Marital Groups)
@@ -168,8 +176,10 @@ server <- function(input, output) {
   })
   
   # Bar chart for Box 5 (Work Group)
+  work_levels <- c("Working full time", "Working part time", "Unemployed", "With a job, but home", 
+                   "Retired", "In school", "Keeping house", "Other")
   output$bar_work <- renderPlot({
-    histogram_discrete(x = "work", title = "Working Classes", df = df_clean)
+    histogram_discrete(x = "work", title = "Working Classes", df = df_clean, levels=work_levels)
   })
   
   # Bar chart for Age (continuous)
