@@ -15,8 +15,7 @@ source('functions.R')
 ui <- fluidPage(
   titlePanel("Interactive Visualization Project"),
   theme = bs_theme(version = 5),
-  
-  selectInput(
+    selectInput(
     "var",
     "Choose a variable to display:",
     choices = c(
@@ -27,6 +26,8 @@ ui <- fluidPage(
       "Work"
     )
   ),
+  actionButton("reset",
+               icon = icon("refresh")),
   
   accordion(
     open = TRUE,
@@ -38,7 +39,7 @@ ui <- fluidPage(
           card(
             full_screen=TRUE,
             card_body(
-              plotOutput("bar_year")
+              plotOutput("bar_year", click= "bar_year_click")
             )
           ),
           card(
@@ -147,6 +148,46 @@ ui <- fluidPage(
 # ---- Define server logic ----
 server <- function(input, output) {
   
+  ##### Filtering the data #######
+  filtered_data <- reactiveVal(df_clean)
+  clicked_info <- reactiveVal(list(variable = NULL, category=NULL))
+  
+  observeEvent(input$bar_year_click,{
+    y_click <- input$bar_year_click$y
+    cat("Y click position:", y_click, "\n")
+    
+    unique_years <- sort(unique(df_clean$year_ranges))
+    cat("Available year ranges:", paste(unique_years), "\n")
+    
+    
+    category_index <- length(unique_years) - round(y_click) + 1
+    cat("Category index:", category_index, "\n")
+    
+    if(category_index >= 1 && category_index <= length(unique_years)){
+      selected_year_range <- unique_years[category_index]
+      cat("Selected year range:", selected_year_range, "\n")
+      
+      clicked_info(list(variable = "year_ranges", category= selected_year_range))
+      
+      filtered_df <- df_clean  %>% filter(year_ranges == selected_year_range)
+      filtered_data(filtered_df)
+      cat("Filtered dataset now has", nrow(filtered_df), "rows\n")
+    }
+  })
+  
+  
+  observeEvent(input$reset,{
+    filtered_data(df_clean)
+    clicked_info(list(variable=NULL, category=NULL))
+    cat("Data reset to full dataset\n")
+  })
+  
+  
+  
+  
+  
+  
+  
   # Bar chart for Box 1 (Education Groups)
   education_levels <- c("3rd grade or less", 
                         "4th to 7th grade", 
@@ -156,41 +197,52 @@ server <- function(input, output) {
                         "8+ yrs of college")
   
   output$bar_educ <- renderPlot({
-    histogram_discrete(x = "educ", title = "Education Groups", df = df_clean, levels=education_levels)
+    histogram_discrete(x = "educ", title = "Education Groups", df = filtered_data(), levels=education_levels)
   })
   
   # Bar chart for Box 2 (Happiness Groups)
+  happiness_levels <- c("Not too happy", "Pretty happy", "Very happy")
   output$bar_happy <- renderPlot({
-    histogram_discrete(x = "happiness", title = "Happiness Groups", df = df_clean)
+    histogram_discrete(x = "happiness", title = "Happiness Groups", df = filtered_data(), levels = happiness_levels)
   })
   
   # Bar chart for Box 3 (Race Groups)
   race_levels <- c("White", "Black", "Other")
   output$bar_race <- renderPlot({
-    histogram_discrete(x = "race", title = "Race Groups", df = df_clean, levels=race_levels)
+    histogram_discrete(x = "race", title = "Race Groups", df = filtered_data(), levels=race_levels)
   })
   
   # Bar chart for Box 4 (Marital Groups)
   output$bar_marital <- renderPlot({
-    histogram_discrete(x = "marital", title = "Marriage Type", df = df_clean)
+    histogram_discrete(x = "marital", title = "Marriage Type", df = filtered_data())
   })
   
   # Bar chart for Box 5 (Work Group)
   work_levels <- c("Working full time", "Working part time", "Unemployed", "With a job, but home", 
                    "Retired", "In school", "Keeping house", "Other")
   output$bar_work <- renderPlot({
-    histogram_discrete(x = "work", title = "Working Classes", df = df_clean, levels=work_levels)
+    histogram_discrete(x = "work", title = "Working Classes", df = filtered_data(), levels=work_levels)
   })
   
   # Bar chart for Age (continuous)
   output$bar_age <- renderPlot({
-    histogram_continuous(x = "age_ranges", title = "Age ranges", df = df_clean)
+    histogram_continuous(x = "age_ranges", title = "Age ranges", df = filtered_data())
   })
   
   # Bar chart for Year (continuous)
+
   output$bar_year <- renderPlot({
-    histogram_continuous(x = "year_ranges", title = "Year ranges", df = df_clean)
-  })
+    current_click <- clicked_info()
+    
+    if (!is.null(current_click$variable) && current_click$variable == "year_ranges"){
+      histogram_continuous(x = "year_ranges", title = "Year ranges", 
+                           df = df_clean, selected_category = current_click$category)
+    } else{
+      histogram_continuous(x = "year_ranges", title = "Year ranges", 
+                           df = filtered_data())
+    }
+   
+    })
   
   
   # Map plot

@@ -35,7 +35,7 @@ region_palette <- colorNumeric(
 ################## HISTOGRAM PLOTS ################################
 
 # Discrete values
-histogram_discrete <- function(x, title, df, adjust_label=TRUE, flip=FALSE, levels=NA) {
+histogram_discrete <- function(x, title, df, adjust_label=TRUE, flip=FALSE, levels=NULL) {
   if(!any(is.na(levels))){
     df_processed <- df %>%
       group_by(sex, !!sym(x)) %>% 
@@ -43,7 +43,9 @@ histogram_discrete <- function(x, title, df, adjust_label=TRUE, flip=FALSE, leve
       group_by(sex) %>% 
       mutate(perc = count / sum(count) * 100) %>% 
       mutate(!!sym(x):= factor(!!(sym(x)), levels = levels))
-  } else{
+  }
+  
+  else{
     df_processed <- df %>%
       group_by(sex, !!sym(x)) %>% 
       summarise(count = n(), .groups = "drop") %>% 
@@ -55,7 +57,7 @@ histogram_discrete <- function(x, title, df, adjust_label=TRUE, flip=FALSE, leve
   p <- ggplot(df_processed,
               aes(x = !!sym(x), y = perc, fill = sex)) + 
     geom_col(position = position_dodge(width = 0.9)) +
-    labs(x = title, y = "Percentage", title = title, fill = "Gender")+
+    labs(x = x, y = "Percentage", title = title, fill = "Gender")+
     scale_fill_manual(values= alpha(c("#d6665c","#2a94a7")))+
     theme_minimal()
   if (flip) {
@@ -77,7 +79,7 @@ histogram_discrete <- function(x, title, df, adjust_label=TRUE, flip=FALSE, leve
 
 
 
-histogram_continuous <- function(x, title, df) {
+histogram_continuous <- function(x, title, df, selected_category = NULL) {
   # Determine breaks based on x variable
   if (x == "age_ranges") {
     breaks <- unique(df$age_ranges)
@@ -88,12 +90,19 @@ histogram_continuous <- function(x, title, df) {
     breaks <- waiver()  # Let ggplot choose breaks
   }
   
-  p <- ggplot(df %>%
-                group_by(sex, !!sym(x)) %>% 
-                summarise(count = n(), .groups = "drop") %>% 
-                group_by(sex) %>%
-                mutate(perc = count / sum(count) * 100) %>%
-                mutate(perc_diverging = ifelse(sex == "F", -perc, perc)),
+  df_processed <- df %>%
+    group_by(sex, !!sym(x)) %>% 
+    summarise(count = n(), .groups = "drop") %>% 
+    group_by(sex) %>%
+    mutate(perc = count / sum(count) * 100) %>%
+    mutate(perc_diverging = ifelse(sex == "F", -perc, perc))
+  
+  if (!is.null(selected_category)) {
+    df_processed <- df_processed  %>%
+      mutate(alpha = ifelse(!!sym(x) == selected_category, 1, 0.1))
+  } 
+  
+  p <- ggplot(df_processed,
               aes(x = !!sym(x), y = perc_diverging, fill = sex)) + 
     geom_col(position = "Identity") +
     #geom_hline(yintercept = 0, color = "black", linewidth = 0.5) +
