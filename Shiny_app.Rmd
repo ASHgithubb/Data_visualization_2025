@@ -141,9 +141,16 @@ df <- df %>%
     race = recode(race, "1" = "White", "2" = "Black", "3" = "Other"),
     
     
-    educ = as.character(educ),
-    educ = recode(educ, "-98" = NA_character_, "-99" = NA_character_),
-    educ = recode(educ, "0" = "No formal schooling", "1" = "1st grade", "2" = "2nd grade", "3" = "3rd grade", "4" = "4th grade", "5" = "5th grade", "6" = "6th grade", "7" = "7th grade", "8" = "8th grade", "9" = "9th grade", "10"= "10th grade", "11" = "11th grade", "12" = "12th grade", "13"= "1 year of college", "14" = "2 years of college",  "15"="3 years of collage", "16" = "4 years of college", "17" = "5 years of college", "18" = "6 years of college", "19" = "7 years of college", "20" = "8 or more years of college"),
+    educ = ifelse(educ %in% c(-99, -98), NA, educ),
+    educ = cut(educ, 
+    breaks = c(0, 4, 8, 12, 16, 20, Inf),
+    labels = c("3rd grade or less", "4th to 7th grade", 
+               "8th to 11th grade", "12th to 3 yrs of college", 
+               "4 to 7 yrs of college", "8+ yrs of college"),
+    right = FALSE),
+    #educ = as.character(educ),
+    #educ = recode(educ, "-98" = NA_character_, "-99" = NA_character_),
+    #educ = recode(educ, "0" = "No formal schooling", "1" = "1st grade", "2" = "2nd grade", "3" = "3rd grade", "4" = "4th grade", "5" = "5th grade", "6" = "6th grade", "7" = "7th grade", "8" = "8th grade", "9" = "9th grade", "10"= "10th grade", "11" = "11th grade", "12" = "12th grade", "13"= "1 year of college", "14" = "2 years of college",  "15"="3 years of collage", "16" = "4 years of college", "17" = "5 years of college", "18" = "6 years of college", "19" = "7 years of college", "20" = "8 or more years of college"),
     
     
     work = as.character(work),

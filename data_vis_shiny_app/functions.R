@@ -35,7 +35,7 @@ region_palette <- colorNumeric(
 ################## HISTOGRAM PLOTS ################################
 
 # Discrete values
-histogram_discrete <- function(x, title, df, adjust_label=TRUE, flip=FALSE) {
+histogram_discrete <- function(x, title, df, adjust_label=FALSE, flip=TRUE) {
   p <- ggplot(df %>%
                 group_by(sex, !!sym(x)) %>% 
                 summarise(count = n(), .groups = "drop") %>% 
@@ -218,3 +218,4 @@ create_shapefiles <- function(df_var, df_data, map_data, years, levels, out_dir 
   
   cat("All shapefiles created.\n")
 }
+
