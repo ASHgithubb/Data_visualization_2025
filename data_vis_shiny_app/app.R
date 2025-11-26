@@ -26,7 +26,7 @@ ui <- fluidPage(
       "Work"
     )
   ),
-  actionButton("reset",
+  actionButton("reset", "Reset",
                icon = icon("refresh")),
   
   accordion(
