@@ -169,6 +169,8 @@ head(df)
 
 ### cleaning the data, eg. removing NA's
 ```{r}
+unique(df$region)
+
 # Creating df_clean with chosen variables
 df_clean <- df %>%
   select(
@@ -236,13 +238,6 @@ data.frame(
 
 write.csv(df_clean, "data_vis_shiny_app/df_clean.csv", row.names = FALSE)
 ```
-
-
-
-
-
-
-
 
 
 ## Exploring GSS data
@@ -448,70 +443,20 @@ work_na <- ggplot(df_NA, aes(x = work, fill=sex)) +
   geom_bar(position = position_dodge(width = 0.9))+
   coord_cartesian(ylim = c(0, 20000))  # sets y-axis range
 
-grid.arrange(year_w_na, year_clean, year_na, ncol=2)
-grid.arrange(age_w_na, age_clean, age_na, ncol=2)
-grid.arrange(region_w_na, region_clean, region_na, ncol=2)
-grid.arrange(sex_w_na, sex_clean, sex_na, ncol=2)
-grid.arrange(happy_w_na, happy_clean, happy_na, ncol=2)
-grid.arrange(race_w_na, race_clean, race_na, ncol=2)
-grid.arrange(marital_w_na, marital_clean, marital_na, ncol=2)
-grid.arrange(educ_w_na, educ_clean, educ_na, ncol=2)
-grid.arrange(work_w_na, work_clean, work_na, ncol=2)
+# grid.arrange(year_w_na, year_clean, year_na, ncol=2)
+# grid.arrange(age_w_na, age_clean, age_na, ncol=2)
+# grid.arrange(region_w_na, region_clean, region_na, ncol=2)
+# grid.arrange(sex_w_na, sex_clean, sex_na, ncol=2)
+# grid.arrange(happy_w_na, happy_clean, happy_na, ncol=2)
+# grid.arrange(race_w_na, race_clean, race_na, ncol=2)
+# grid.arrange(marital_w_na, marital_clean, marital_na, ncol=2)
+# grid.arrange(educ_w_na, educ_clean, educ_na, ncol=2)
+# grid.arrange(work_w_na, work_clean, work_na, ncol=2)
 ```
 
 # Part 2 -building the app
 
-## Functions for the map
-
-### Creating map
-```{r}
-# Define mapping of regions to state abbreviations
-us_regions <- list(
-  "New England" = c("CT", "ME", "MA", "NH", "RI", "VT"),
-  "Middle Atlantic" = c("NJ", "NY", "PA"),
-  "East North Central" = c("IL", "IN", "MI", "OH", "WI"),
-  "West North Central" = c("IA", "KS", "MN", "MO", "NE", "ND", "SD"),
-  "South Atlantic" = c("DE", "DC", "FL", "GA", "MD", "NC", "SC", "VA", "WV"),
-  "East South Central" = c("AL", "KY", "MS", "TN"),
-  "West South Central" = c("AR", "LA", "OK", "TX"),
-  "Mountain" = c("AZ", "CO", "ID", "MT", "NV", "NM", "UT", "WY"),
-  "Pacific" = c("AK", "CA", "HI", "OR", "WA")
-)
-
-# Convert the list to a tidy dataframe
-region_to_state_df <- tibble(
-  region = rep(names(us_regions), lengths(us_regions)),
-  state = unlist(us_regions)
-)
-
-library(sf)
-library(leaflet)
-
-# Loading map
-my_map <- read_sf("data_vis_shiny_app/us_states/cb_2024_us_state_500k.shp")
-
-# Simplify polygons to speed up rendering (the higher the faster)
-my_map <- my_map %>%
-  st_simplify(my_map, dTolerance = 20000) %>%# adjust tolerance
-  sf::st_transform(crs = 4326)
-
-#Adding column with region names
-my_map <- my_map %>%
-  rename(state=STUSPS)%>%
-  filter(!state %in% c("AS", "GU", "MP", "PR", "VI"))%>%
-  left_join(region_to_state_df %>% select(state, region), by = "state")
-
-
-#Converting states to regions 
-map_data <- my_map %>%
-  group_by(region) %>%
-  summarise(geometry = st_union(geometry))  # merge polygons
-
-# Write shapefile
-st_write(map_data, "data_vis_shiny_app/data_map.shp", delete_dsn = TRUE, quiet = TRUE)
-```
-
-### Creating data
+### Creating data files
 ```{r}
 # Assign the data 
 library(dplyr)
@@ -528,8 +473,8 @@ decades <- list(
 )
 
 regions <- c(
-  "New England", "Middle Atlantic", "East North Central", "West North Central",
-  "South Atlantic", "East South Central", "West South Central", "Mountain", "Pacific"
+  "New England", "Middle Atlantic", "East North Central", "West North Central"
+  #, "South Atlantic", "East South Central", "West South Central", "Mountain", "Pacific"
 )
 
 # Create a complete grid of all combinations (even if missing in data)
@@ -608,76 +553,105 @@ df_new <- df_all%>%
 
 unique(df_clean$region)
 ```
+
+#Inspecting distributions for percentage difference for all variables
 ```{r}
-#Function to create data
-function_filter <- function (df_var, df_data) {
-
-df_sym <- rlang::sym(df_var)  # convert string → symbol
-
-df_simple <- purrr::map_dfr(
-  names(decades),
-  \(decade) {
-    purrr::map_dfr(
-      regions,
-      \(reg) {
-        df_clean %>%
-          filter(year %in% decades[[decade]], region == reg) %>%
-          group_by(sex, !!df_sym) %>%
-          summarise(count = n(), .groups = "drop") %>%
-          group_by(sex) %>%
-          mutate(
-            perc = count / sum(count) * 100,
-            region = reg,
-            year = decade
-          ) 
-      }
+perc_happy <- function_filter(
+      df_var  = "happiness",
+      df_data = df_happy
     )
-  }
+
+perc_educ <- function_filter(
+      df_var  = "educ",
+      df_data = df_educ
+    )
+
+perc_marital <- function_filter(
+      df_var  = "marital",
+      df_data = df_marital
+    )
+
+
+perc_happy <- perc_happy%>%
+  #filter(percent !=0)
+  filter(region== "Middle Atlantic" | region=="East North Central" | region=="New England" | region=="West North Central")
+
+perc_educ <- perc_educ%>%
+  #filter(percent !=0)
+  filter(region== "Middle Atlantic" | region=="East North Central" | region=="New England" | region=="West North Central")
+
+perc_marital <- perc_marital%>%
+  #filter(percent !=0)
+  filter(region== "Middle Atlantic" | region=="East North Central" | region=="New England" | region=="West North Central")
+
+
+library(ggplot2)
+
+happy_plot <- ggplot(perc_happy, aes(x = percent)) +
+  geom_histogram(binwidth = 0.1, color = "black", fill = "steelblue") +
+  scale_x_continuous(breaks = seq(floor(min(perc_happy$percent)),
+                                  ceiling(max(perc_happy$percent)),
+                                  by = 1)) +
+  geom_density(alpha = 0.3) +
+  labs(
+    title = "Values for the variable Happiness",
+    x = "Percentage difference between female and male scores",
+    y = "Count"
+  ) +
+  theme_minimal()
+
+educ_plot <- ggplot(perc_educ, aes(x = percent)) +
+  geom_histogram(binwidth = 0.1, color = "black", fill = "steelblue") +
+  scale_x_continuous(breaks = seq(floor(min(perc_educ$percent)),
+                                  ceiling(max(perc_educ$percent)),
+                                  by = 1)) +
+  geom_density(alpha = 0.3) +
+  labs(
+    title = "Values for the variable Educational level",
+    x = "Percentage difference between female and male scores",
+    y = "Count"
+  ) +
+  theme_minimal()
+
+marital_plot <- ggplot(perc_marital, aes(x = percent)) +
+  geom_histogram(binwidth = 0.1, color = "black", fill = "steelblue") +
+  scale_x_continuous(breaks = seq(floor(min(perc_marital$percent)),
+                                  ceiling(max(perc_marital$percent)),
+                                  by = 1)) +
+  geom_density(alpha = 0.3) +
+  labs(
+    title = "Values for the variable Marital",
+    x = "Percentage difference between female and male scores",
+    y = "Count"
+  ) +
+  theme_minimal()
+
+list_all <- c(
+  perc_happy$percent,
+  perc_educ$percent,
+  perc_marital$percent
 )
-# Calculating percentage differences
-df_all <- df_data %>%
-  left_join(df_simple, by = c("sex", df_var, "region", "year")) %>%
-  mutate(
-    count = replace_na(count, 0),
-    perc = replace_na(perc, 0)
-  ) %>%
-  arrange(year, region, sex, !!df_sym)
 
+list_all <- as.data.frame(list_all)
 
-df_dif <- df_all %>%
-  select(-"count")%>%
-  pivot_wider(
-    names_from = sex,
-    values_from = perc
-  ) %>%
-  mutate(
-    percent = `F` - `M`  # difference between male and female percentages
-  ) 
+all_plot <- ggplot(list_all, aes(x = list_all)) +
+  geom_histogram(binwidth = 0.1, color = "black", fill = "steelblue") +
+  scale_x_continuous(breaks = seq(floor(min(list_all)),
+                                  ceiling(max(list_all)),
+                                  by = 1)) +
+  geom_density(alpha = 0.3) +
+  labs(
+    title = "Values for all variables combined",
+    x = "Percentage difference between female and male scores",
+    y = "Count"
+  ) +
+  theme_minimal()
 
-}
-
+happy_plot
+educ_plot
+marital_plot
+all_plot
 ```
-
-```{r}
-
-df_happy_final <- function_filter(
-  df_var = "happiness",
-  df_data = df_happy
-)
-
-df_marital_final <- function_filter(
-  df_var = "marital",
-  df_data = df_marital
-)
-
-df_marital_educ <- function_filter(
-  df_var = "educ",
-  df_data = df_educ
-)
-
-head(df_marital_final)
-```
-
 
 # Part 3
 ## Run the app
