@@ -32,49 +32,98 @@ df_clean <- read.csv("df_clean.csv", stringsAsFactors = FALSE)
 ################## HISTOGRAM PLOTS ################################
 
 # Discrete values
-histogram_discrete <- function(x, title, df) {
-  p <- ggplot(df %>%
-                group_by(sex, !!sym(x)) %>% 
-                summarise(count = n(), .groups = "drop") %>% 
-                group_by(sex) %>%  # Fixed grouping variable
-                mutate(perc = count / sum(count) * 100),
+histogram_discrete <- function(x, title, df, adjust_label=TRUE, flip=FALSE, levels=NULL) {
+  if(!any(is.na(levels))){
+    df_processed <- df %>%
+      group_by(sex, !!sym(x)) %>% 
+      summarise(count = n(), .groups = "drop") %>% 
+      group_by(sex) %>% 
+      mutate(perc = count / sum(count) * 100) %>% 
+      mutate(!!sym(x):= factor(!!(sym(x)), levels = levels))
+  }
+  
+  else{
+    df_processed <- df %>%
+      group_by(sex, !!sym(x)) %>% 
+      summarise(count = n(), .groups = "drop") %>% 
+      group_by(sex) %>% 
+      mutate(perc = count / sum(count) * 100)
+  }
+  
+  
+  p <- ggplot(df_processed,
               aes(x = !!sym(x), y = perc, fill = sex)) + 
     geom_col(position = position_dodge(width = 0.9)) +
-    labs(x = x, title = title, fill = "Gender") +
-    coord_cartesian(ylim = c(0, 100))+
-    theme_minimal()+
-    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 0.95, size = rel(0.80)))
+    labs(x = x, y = "Percentage", title = title, fill = "Gender")+
+    scale_fill_manual(values= alpha(c("#d6665c","#2a94a7")))+
+    theme_minimal()
+  if (flip) {
+    p <- p + coord_flip(ylim = c(0, 100)) 
+    + theme(axis.text.y = element_text(size = 10)) 
+  } else {
+    p <- p + coord_cartesian(ylim = c(0, 100))
+    if (adjust_label) {
+      p <- p  + scale_x_discrete(labels=scales::label_wrap(8))+
+        theme(axis.text.x = element_text(size=9),
+              plot.title= element_text(size=20),
+              text = element_text(size=15))
+        #theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust = .95))
+    }
+  }
+    
   return(p)
 }
 
 
 
-# continuous values
-histogram_continuous <- function(x, title, df) {
-  #all_unique <- unique(!!sym(x))
-  if (x=="age")
-    breaks <- unique(df$age)
-  else if (x=="year")
-    breaks <- min(df$year):max(df$year)
-  p <- ggplot(df %>%
-                group_by(sex, !!sym(x)) %>% 
-                summarise(count = n(), .groups = "drop") %>% 
-                group_by(sex) %>%  # Fixed grouping variable
-                mutate(perc = count / sum(count) * 100)%>%
-                mutate(perc_diverging = ifelse(sex == "F", -perc, perc)),
+histogram_continuous <- function(x, title, df, selected_category = NULL) {
+  # Determine breaks based on x variable
+  if (x == "age_ranges") {
+    breaks <- unique(df$age_ranges)
+  } else if (x == "year_ranges") {
+    breaks <- unique(df$year_ranges)
+  } else {
+    # Default case for other continuous variables
+    breaks <- waiver()  # Let ggplot choose breaks
+  }
+  
+  df_processed <- df %>%
+    group_by(sex, !!sym(x)) %>% 
+    summarise(count = n(), .groups = "drop") %>% 
+    group_by(sex) %>%
+    mutate(perc = count / sum(count) * 100) %>%
+    mutate(perc_diverging = ifelse(sex == "F", -perc, perc))
+  
+  if (!is.null(selected_category)) {
+    df_processed <- df_processed  %>%
+      mutate(alpha = ifelse(!!sym(x) == selected_category, 1, 0.1))
+  } 
+  
+  p <- ggplot(df_processed,
               aes(x = !!sym(x), y = perc_diverging, fill = sex)) + 
-    geom_col(position = position_dodge(width = 0.9)) +
-    geom_hline(yintercept = 0, color = "black", linewidth = 0.5) +
-    theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1, size = rel(.80))) +
-    labs(x = x, y = "Percentage", title = title, fill = "Gender") +
-    coord_cartesian(ylim = c(-100, 100))+
-    theme_minimal()+
-    scale_x_continuous(breaks = breaks) +
-    scale_y_continuous(labels = function(x) abs(x))+
-    coord_flip()
+    geom_col(position = "Identity") +
+    #geom_hline(yintercept = 0, color = "black", linewidth = 0.5) +
+    #theme(axis.text.y = element_text(angle = 90, vjust = 1, hjust = 1, size = 10)) +
+    labs(x = title, y = "Percentage", title = title, fill = "Gender") +
+    theme_minimal() +
+    scale_fill_manual(values= alpha(c("#d6665c","#2a94a7")))+
+    scale_y_continuous(
+      labels = function(x) abs(x),
+      limits = c(-10, 10)  
+    ) +
+    coord_flip()  #
+  
+  # Add appropriate scale based on axis flip
+  # After coord_flip(), the original x-axis becomes y-axis
+  if (x %in% c("age_ranges", "year_ranges")) {
+    p <- p + scale_x_discrete(breaks = breaks)+
+      theme(axis.text.y = element_text(size=9),
+            plot.title= element_text(size=20),
+            text = element_text(size=15)) 
+  }
+  
   return(p)
 }
-
 ################## MAP ################################
 
 years <- c("1970's","1980's","1990's","2000's","2010's","2020's")
@@ -236,3 +285,4 @@ function_filter <- function(df_var, df_data) {
     pivot_wider(names_from = sex, values_from = perc) %>%
     mutate(percent = F - M)
 }
+
