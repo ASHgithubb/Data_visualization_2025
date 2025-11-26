@@ -252,12 +252,6 @@ decades[11]
 ```
 
 
-
-```{r}
-seq(18, 89, by = 1)
-```
-
-
 ## Exploring GSS data
 
 ### Distribution of Data
