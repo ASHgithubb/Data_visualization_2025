@@ -133,10 +133,10 @@ df <- df %>%
     region = as.factor(region),
     region = recode(region, "1" = "New England", "2" = "Middle Atlantic",  "3" = "East North Central",  "4" = "West North Central", "5" = "South Atlantic",  "6" = "East South Central",  "7" = "West South Central",  "8" = "Mountain",  "9" = "Pacific"),
     
-    happiness = as.character(happiness),
+    happiness = as.factor(happiness),
     happiness = recode(happiness, "1" = "Very happy", "2" = "Pretty happy", "3" = "Not too happy", "-98" = NA_character_, "-100" = NA_character_, "-99" = NA_character_, "-97" = NA_character_),
     
-    race = as.character(race),
+    race = as.factor(race),
     race = recode(race, "-100" = NA_character_),
     race = recode(race, "1" = "White", "2" = "Black", "3" = "Other"),
     
@@ -148,13 +148,16 @@ df <- df %>%
                "High School", "College Degree", 
                "Bachelor's Degree", "Master's Degree", "Advanced Professional Degree"),
     right = FALSE),
+    #educ = as.factor(educ),
+    #educ = recode(educ, "-98" = NA_character_, "-99" = NA_character_),
+    #educ = recode(educ, "0" = "No formal schooling", "1" = "1st grade", "2" = "2nd grade", "3" = "3rd grade", "4" = "4th grade", "5" = "5th grade", "6" = "6th grade", "7" = "7th grade", "8" = "8th grade", "9" = "9th grade", "10"= "10th grade", "11" = "11th grade", "12" = "12th grade", "13"= "1 year of college", "14" = "2 years of college",  "15"="3 years of collage", "16" = "4 years of college", "17" = "5 years of college", "18" = "6 years of college", "19" = "7 years of college", "20" = "8 or more years of college"),
     
     
-    work = as.character(work),
+    work = as.factor(work),
     work = recode(work, "-97" = NA_character_, "-98" = NA_character_, "-99" = NA_character_),
     work = recode(work, "1" = "Working full time", "2" = "Working part time", "3" = "With a job, but home", "4" = "Unemployed", "5" = "Retired", "6" = "In school", "7" = "Keeping house", "8" = "Other"),
     
-    marital = as.character(marital),
+    marital = as.factor(marital),
     marital = recode(marital, "-97" = NA_character_, "-98" = NA_character_, "-99" = NA_character_),
     marital = recode(marital, "1" = "Married", "2" = "Widowed", "3" = "Divorced", "4" = "Sepreated", "5" = "Never married")
   )
@@ -510,7 +513,7 @@ df_educ <- expand_grid(
 write.csv(df_educ, "data_vis_shiny_app/data_educ.csv", row.names = FALSE)
 unique(df_educ$educ)
 
-# Create a complete grid of all combinations of educ
+# Create a complete grid of all combinations of marital
 df_marital <- expand_grid(
   sex = unique(df_clean$sex),
   marital = unique(df_clean$marital),
@@ -520,51 +523,32 @@ df_marital <- expand_grid(
 unique(df_marital$marital)
 
 write.csv(df_marital, "data_vis_shiny_app/data_marital.csv", row.names = FALSE)
-```
 
-
-# Checking data
-```{r}
-df_var <- "marital" #and educ
-df_data <- df_marital
-
-df_sym <- rlang::sym(df_var)  # convert string → symbol
-
-df_simple <- purrr::map_dfr(
-  names(decades),
-  \(decade) {
-    purrr::map_dfr(
-      regions,
-      \(reg) {
-        df_clean %>%
-          filter(year %in% decades[[decade]], region == reg) %>%
-          group_by(sex, !!df_sym) %>%
-          summarise(count = n(), .groups = "drop") %>%
-          group_by(sex) %>%
-          mutate(
-            perc = count / sum(count) * 100,
-            region = reg,
-            year = decade
-          ) 
-      }
-    )
-  }
+# Create a complete grid of all combinations of race
+df_race <- expand_grid(
+  sex = unique(df_clean$sex),
+  race = unique(df_clean$race),
+  region = regions,
+  year = names(decades)
 )
+unique(df_race$race)
 
-# Calculating percentage differences
-df_all <- df_data %>%
-  left_join(df_simple, by = c("sex", df_var, "region", "year")) %>%
-  mutate(
-    count = replace_na(count, 0),
-    perc = replace_na(perc, 0)
-  ) %>%
-  arrange(year, region, sex, !!df_sym)
+write.csv(df_race, "data_vis_shiny_app/data_race.csv", row.names = FALSE)
 
-df_new <- df_all%>%
-  filter(!count==0)
+# Create a complete grid of all combinations of work
+df_work <- expand_grid(
+  sex = unique(df_clean$sex),
+  work = unique(df_clean$work),
+  region = regions,
+  year = names(decades)
+)
+unique(df_work$work)
 
-unique(df_clean$region)
+write.csv(df_work, "data_vis_shiny_app/data_work.csv", row.names = FALSE)
 ```
+
+
+
 
 #Inspecting distributions for percentage difference for all variables
 ```{r}
@@ -583,18 +567,17 @@ perc_marital <- function_filter(
       df_data = df_marital
     )
 
+perc_race <- function_filter(
+      df_var  = "race",
+      df_data = df_race
+    )
 
-perc_happy <- perc_happy%>%
-  #filter(percent !=0)
-  filter(region== "Middle Atlantic" | region=="East North Central" | region=="New England" | region=="West North Central")
+perc_work <- function_filter(
+      df_var  = "work",
+      df_data = df_work
+    )
 
-perc_educ <- perc_educ%>%
-  #filter(percent !=0)
-  filter(region== "Middle Atlantic" | region=="East North Central" | region=="New England" | region=="West North Central")
 
-perc_marital <- perc_marital%>%
-  #filter(percent !=0)
-  filter(region== "Middle Atlantic" | region=="East North Central" | region=="New England" | region=="West North Central")
 
 
 library(ggplot2)
@@ -638,10 +621,38 @@ marital_plot <- ggplot(perc_marital, aes(x = percent)) +
   ) +
   theme_minimal()
 
+race_plot <- ggplot(perc_race, aes(x = percent)) +
+  geom_histogram(binwidth = 0.1, color = "black", fill = "steelblue") +
+  scale_x_continuous(breaks = seq(floor(min(perc_race$percent)),
+                                  ceiling(max(perc_race$percent)),
+                                  by = 1)) +
+  geom_density(alpha = 0.3) +
+  labs(
+    title = "Values for the variable race",
+    x = "Percentage difference between female and male scores",
+    y = "Count"
+  ) +
+  theme_minimal()
+
+work_plot <- ggplot(perc_work, aes(x = percent)) +
+  geom_histogram(binwidth = 0.1, color = "black", fill = "steelblue") +
+  scale_x_continuous(breaks = seq(floor(min(perc_work$percent)),
+                                  ceiling(max(perc_work$percent)),
+                                  by = 1)) +
+  geom_density(alpha = 0.3) +
+  labs(
+    title = "Values for the variable work",
+    x = "Percentage difference between female and male scores",
+    y = "Count"
+  ) +
+  theme_minimal()
+
 list_all <- c(
   perc_happy$percent,
   perc_educ$percent,
-  perc_marital$percent
+  perc_marital$percent,
+  perc_race$percent,
+  perc_work$percent
 )
 
 list_all <- as.data.frame(list_all)
@@ -662,6 +673,8 @@ all_plot <- ggplot(list_all, aes(x = list_all)) +
 happy_plot
 educ_plot
 marital_plot
+race_plot
+work_plot
 all_plot
 ```
 
