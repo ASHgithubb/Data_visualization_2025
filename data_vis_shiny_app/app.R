@@ -96,19 +96,24 @@ server <- function(input, output) {
   
   observeEvent(input$bar_year_click,{
     y_click <- input$bar_year_click$y
+    cat("Y click position:", y_click, "\n")
     
     unique_years <- sort(unique(df_clean$year_ranges))
+    cat("Available year ranges:", paste(unique_years), "\n")
     
     
     category_index <- length(unique_years) - round(y_click) + 1
+    cat("Category index:", category_index, "\n")
     
     if(category_index >= 1 && category_index <= length(unique_years)){
       selected_year_range <- unique_years[category_index]
+      cat("Selected year range:", selected_year_range, "\n")
       
       clicked_info(list(variable = "year_ranges", category= selected_year_range))
       
       filtered_df <- df_clean  %>% filter(year_ranges == selected_year_range)
       filtered_data(filtered_df)
+      cat("Filtered dataset now has", nrow(filtered_df), "rows\n")
     }
   })
   
@@ -121,9 +126,12 @@ server <- function(input, output) {
   
   
   # Bar chart for Box 1 (Education Groups)
-  education_levels <- c("Kindergarten", "Elementary School", 
-                        "High School", "College Degree", 
-                        "Bachelor's Degree", "Master's Degree", "Advanced Professional Degree")
+  education_levels <- c("3rd grade or less", 
+                        "4th to 7th grade", 
+                        "8th to 11th grade", 
+                        "12th to 3 yrs of college", 
+                        "4 to 7 yrs of college", 
+                        "8+ yrs of college")
   
   output$bar_educ <- renderPlot({
     histogram_discrete(x = "educ", title = "Education Groups", df = filtered_data(), levels=education_levels)
@@ -142,9 +150,8 @@ server <- function(input, output) {
   })
   
   # Bar chart for Box 4 (Marital Groups)
-  marital_levels <- c("Married", "Widowed", "Divorced", "Sepreated", "Never married")
   output$bar_marital <- renderPlot({
-    histogram_discrete(x = "marital", title = "Marriage Type", df = filtered_data(), levels=marital_levels)
+    histogram_discrete(x = "marital", title = "Marriage Type", df = filtered_data())
   })
   
   # Bar chart for Box 5 (Work Group)
