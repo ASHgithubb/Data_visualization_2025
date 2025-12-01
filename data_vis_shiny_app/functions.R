@@ -126,8 +126,8 @@ histogram_continuous <- function(x, title, df, selected_category = NULL) {
     group_by(sex, !!sym(x)) %>% 
     summarise(count = n(), .groups = "drop") %>% 
     group_by(sex) %>%
-    mutate(perc = count / sum(count) * 100) %>%
-    mutate(perc_diverging = ifelse(sex == "F", -perc, perc))
+    mutate(perc = count / sum(count) * 100)
+    #mutate(perc_diverging = ifelse(sex == "F", -perc, perc))
   
   if (!is.null(selected_category)) {
     df_processed <- df_processed  %>%
@@ -135,26 +135,24 @@ histogram_continuous <- function(x, title, df, selected_category = NULL) {
   } 
   
   p <- ggplot(df_processed,
-              aes(x = !!sym(x), y = perc_diverging, fill = sex)) + 
-    geom_col(position = "Identity") +
+              aes(x = !!sym(x), y = perc, fill = sex)) + 
+    geom_col(position = position_dodge(width = 0.9)) +
     #geom_hline(yintercept = 0, color = "black", linewidth = 0.5) +
     #theme(axis.text.y = element_text(angle = 90, vjust = 1, hjust = 1, size = 10)) +
     labs(x = title, y = "Percentage", title = title, fill = "Gender") +
     theme_minimal() +
-    scale_fill_manual(values= alpha(c("#d6665c","#2a94a7")))+
-    scale_y_continuous(
-      labels = function(x) abs(x),
-      limits = c(-10, 10)  
-    ) +
-    coord_flip()  #
+    scale_fill_manual(values= alpha(c("#d6665c","#2a94a7")))
+    #scale_y_continuous(
+      #labels = function(x) abs(x),
+    #  limits = c(0, 10)  
+    #)
+    #coord_flip()  #
   
   # Add appropriate scale based on axis flip
   # After coord_flip(), the original x-axis becomes y-axis
   if (x %in% c("age_ranges", "year_ranges")) {
-    p <- p + scale_x_discrete(breaks = breaks)+
-      theme(axis.text.y = element_text(size=9),
-            plot.title= element_text(size=20),
-            text = element_text(size=15)) 
+    p <- p + scale_x_discrete(breaks = breaks, labels=scales::label_wrap(8))
+ 
   }
   
   return(p)
