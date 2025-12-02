@@ -120,11 +120,6 @@ server <- function(input, output) {
   })
   
   
-  
-  
-  
-  
-  
   # Bar chart for Box 1 (Education Groups)
   education_levels <- c("Kindergarten", "Elementary School", 
                         "High School", "College Degree", 
@@ -186,7 +181,9 @@ server <- function(input, output) {
     variable <- switch(input$var,
                        "Happiness" = "happiness",
                        "Education" = "educ",
-                       "Marital Status" = "marital")
+                       "Marital Status" = "marital",
+                       "Race" = "race",
+                       "Work" = "work")
     
     levels_selected <- level_list[[variable]]
     n_rows <- length(levels_selected)
@@ -196,7 +193,7 @@ server <- function(input, output) {
     grid_css <- sprintf("
       display:grid;
       grid-template-columns: 60px repeat(%d, 1fr);
-      grid-template-rows: 40px repeat(%d, 180px); #40 px is the labels row
+      grid-template-rows: 40px repeat(%d, 185px); #40 px is the labels row
       gap: 5px;
       width: 100%%;
     ", n_cols, n_rows)
@@ -249,9 +246,9 @@ server <- function(input, output) {
       ),
       tags$div(
         style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold;",
-        tags$span("-20%"),
+        tags$span("-50%"),
         tags$span("0%"),
-        tags$span("20%")
+        tags$span("50%")
       )
     )
   })
@@ -261,9 +258,17 @@ server <- function(input, output) {
     variable <- switch(input$var,
                        "Happiness" = "happiness",
                        "Education" = "educ",
-                       "Marital Status" = "marital")
+                       "Marital Status" = "marital",
+                       "Race" = "race",
+                       "Work" = "work")
     
-    df_final <- function_filter(df_var = variable, df_data = data_list[[variable]])
+    current_click <- clicked_info()
+    
+    if (!is.null(current_click$variable) && !is.null(current_click$category)){
+      df_final <- function_filter(df_var = variable, df_data = data_list[[variable]], var_filter=current_click$variable, cat_filter=current_click$category)
+    } else {
+      df_final <- function_filter(df_var = variable, df_data = data_list[[variable]])
+    }
     levels_selected <- level_list[[variable]]
     n_rows <- length(levels_selected)
     n_cols <- length(years)
