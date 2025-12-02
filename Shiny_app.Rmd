@@ -665,6 +665,151 @@ marital_plot
 all_plot
 ```
 
+```{r}
+??ggplotly
+```
+
+```{r}
+demo("crosstalk-highlight-ggplotly", package = "plotly")
+```
+```{r}
+help(highlight_key)
+```
+
+
+```{r}
+d <- highlight_key(txhousing, ~city)
+p <- ggplot(d, aes(date, median, group = city)) + geom_line()
+gg <- ggplotly(p, tooltip = "city") 
+highlight(gg, dynamic = TRUE)
+
+# supply custom colors to the brush 
+cols <- toRGB(RColorBrewer::brewer.pal(3, "Dark2"), 0.5)
+highlight(gg, on = "plotly_hover", color = cols, dynamic = TRUE)
+
+# Use attrs_selected() for complete control over the selection appearance
+# note any relevant colors you specify here should override the color argument
+s <- attrs_selected(
+  showlegend = TRUE,
+  mode = "lines+markers",
+  marker = list(symbol = "x")
+)
+
+highlight(layout(gg, showlegend = TRUE), selected = s)
+```
+
+
+```{r}
+# Example DeepSeek
+library(plotly)
+library(shiny)
+
+ui <- fluidPage(
+  fluidRow(
+    column(4, plotlyOutput("hist_mpg")),
+    column(4, plotlyOutput("hist_wt")),
+    column(4, plotlyOutput("hist_cyl"))
+  ),
+  plotlyOutput("scatter_plot")
+)
+
+server <- function(input, output) {
+  
+  # Reactive for filtered data
+  filtered_data <- reactiveVal(mtcars)
+  
+  # Observe clicks on any histogram
+  observeEvent(event_data("plotly_click"), {
+    click <- event_data("plotly_click")
+    if (!is.null(click)) {
+      # Simple filtering logic - adjust based on your needs
+      current_data <- mtcars
+      if (click$curveNumber == 0) { # MPG histogram
+        filtered_data(current_data[current_data$mpg >= click$x, ])
+      } else if (click$curveNumber == 1) { # WT histogram
+        filtered_data(current_data[current_data$wt >= click$x, ])
+      }
+    }
+  })
+  
+  output$hist_mpg <- renderPlotly({
+    plot_ly(filtered_data(), x = ~mpg, type = "histogram") %>%
+      layout(title = "MPG")
+  })
+  
+  output$hist_wt <- renderPlotly({
+    plot_ly(filtered_data(), x = ~wt, type = "histogram") %>%
+      layout(title = "Weight")
+  })
+  
+  output$hist_cyl <- renderPlotly({
+    plot_ly(filtered_data(), x = ~cyl, type = "histogram") %>%
+      layout(title = "Cylinders")
+  })
+  
+  output$scatter_plot <- renderPlotly({
+    plot_ly(filtered_data(), x = ~mpg, y = ~wt, type = 'scatter', mode = 'markers')
+  })
+}
+
+shinyApp(ui, server)
+
+
+```
+
+
+```{r}
+# Reactive value to store filtered data
+filtered_data <- reactiveVal(df_clean)
+
+# When year is clicked, update the reactive value
+observeEvent(event_data("plotly_click", source = "year"), {
+  click_data <- event_data("plotly_click", source = "year")
+  
+  if (!is.null(click_data)) {
+    clicked_year_range <- click_data$x
+    
+    # Filter and store
+    filtered_df <- df_clean %>% 
+      filter(year_ranges == clicked_year_range)
+    
+    filtered_data(filtered_df)
+  }
+})
+
+# Reset button
+observeEvent(input$reset_filter, {
+  filtered_data(df_clean)
+})
+
+# Plots use the reactive filtered data
+output$bar_year <- renderPlotly({
+  # Year plot always shows ALL data (not filtered by itself)
+  p <- histogram_continuous(x = "year_ranges", title = "Year ranges", 
+                           df = df_clean)
+  ggplotly(p, source = 'year')
+})
+
+output$bar_genre <- renderPlotly({
+  # Other plots use filtered data
+  p <- histogram_continuous(x = "genre", title = "Genre Distribution", 
+                           df = filtered_data())
+  ggplotly(p, source = 'genre')
+})
+
+output$scatter_rating <- renderPlotly({
+  p <- ggplot(filtered_data(), aes(x = rating, y = views)) +
+    geom_point()
+  ggplotly(p, source = 'rating')
+})
+```
+
+
+# Example github
+https://github.com/GtheSheep/Plotly-Shiny-Examples/blob/master/server.R
+
+https://plotly-r.com/linking-views-with-shiny
+
 # Part 3
 ## Run the app
 ```{r}
