@@ -28,6 +28,8 @@ df_happy <- read.csv("data_happy.csv", stringsAsFactors = FALSE)
 df_educ <- read.csv("data_educ.csv", stringsAsFactors = FALSE)
 df_marital <- read.csv("data_marital.csv", stringsAsFactors = FALSE)
 df_clean <- read.csv("df_clean.csv", stringsAsFactors = FALSE)
+df_race <- read.csv("data_race.csv", stringsAsFactors = FALSE)
+df_work <- read.csv("data_work.csv", stringsAsFactors = FALSE)
 
 years <- c("1970's","1980's","1990's","2000's","2010's","2020's")
 
@@ -166,7 +168,8 @@ data_list <- list(
   educ      = df_educ,
   marital   = df_marital,
   race   = df_race,
-  work   = df_work
+  work   = df_work,
+  df_clean = df_clean
 )
 
 ################## lOADING MAP ################################

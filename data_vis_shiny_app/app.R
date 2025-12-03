@@ -91,7 +91,7 @@ ui <- fluidPage(
 server <- function(input, output) {
   
   ##### Filtering the data #######
-  filtered_data <- reactiveVal(df_clean)
+  filtered_data <- reactiveVal(data_list)
   clicked_info <- reactiveVal(list(variable = NULL, category=NULL))
   
   observeEvent(input$bar_year_click,{
@@ -119,10 +119,12 @@ server <- function(input, output) {
   
   
   observeEvent(input$reset,{
-    filtered_data(df_clean)
+    filtered_data(data_list)
     clicked_info(list(variable=NULL, category=NULL))
     cat("Data reset to full dataset\n")
   })
+  
+  df_hist <- reactive({filtered_data()[["df_clean"]]})
   
   
   # Bar chart for Box 1 (Education Groups)
@@ -134,19 +136,19 @@ server <- function(input, output) {
                         "8+ yrs of college")
   
   output$bar_educ <- renderPlot({
-    histogram_discrete(x = "educ", title = "Education Groups", df = filtered_data(), levels=education_levels)
+    histogram_discrete(x = "educ", title = "Education Groups", df = df_hist(), levels=education_levels)
   })
   
   # Bar chart for Box 2 (Happiness Groups)
   happiness_levels <- c("Not too happy", "Pretty happy", "Very happy")
   output$bar_happy <- renderPlot({
-    histogram_discrete(x = "happiness", title = "Happiness Groups", df = filtered_data(), levels = happiness_levels)
+    histogram_discrete(x = "happiness", title = "Happiness Groups", df = df_hist(), levels = happiness_levels)
   })
   
   # Bar chart for Box 3 (Race Groups)
   race_levels <- c("White", "Black", "Other")
   output$bar_race <- renderPlot({
-    histogram_discrete(x = "race", title = "Race Groups", df = filtered_data(), levels=race_levels)
+    histogram_discrete(x = "race", title = "Race Groups", df = df_hist(), levels=race_levels)
   })
   
   # Bar chart for Box 4 (Marital Groups)
@@ -158,12 +160,12 @@ server <- function(input, output) {
   work_levels <- c("Working full time", "Working part time", "Unemployed", "With a job, but home", 
                    "Retired", "In school", "Keeping house", "Other")
   output$bar_work <- renderPlot({
-    histogram_discrete(x = "work", title = "Working Classes", df = filtered_data(), levels=work_levels)
+    histogram_discrete(x = "work", title = "Working Classes", df = df_hist(), levels=work_levels)
   })
   
   # Bar chart for Age (continuous)
   output$bar_age <- renderPlot({
-    histogram_continuous(x = "age_ranges", title = "Age ranges", df = filtered_data())
+    histogram_continuous(x = "age_ranges", title = "Age ranges", df = df_hist())
   })
   
   # Bar chart for Year (continuous)
@@ -176,7 +178,7 @@ server <- function(input, output) {
                            df = df_clean, selected_category = current_click$category)
     } else{
       histogram_continuous(x = "year_ranges", title = "Year ranges", 
-                           df = filtered_data())
+                           df = df_hist())
     }
    
     })
@@ -263,6 +265,9 @@ server <- function(input, output) {
   df_clean <- df_clean
   
   # Reactive rendering of all maps
+  
+  # Add this to see what's in your data
+  
   observe({
     variable <- switch(input$var,
                        "Happiness" = "happiness",
