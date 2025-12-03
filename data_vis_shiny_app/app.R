@@ -91,81 +91,77 @@ ui <- fluidPage(
 server <- function(input, output) {
   
   ##### Filtering the data #######
-  filtered_data <- reactiveVal(data_list)
+  filtered_data <- reactiveVal(df_clean)
   clicked_info <- reactiveVal(list(variable = NULL, category=NULL))
   
   observeEvent(input$bar_year_click,{
     y_click <- input$bar_year_click$y
-    cat("Y click position:", y_click, "\n")
     
     unique_years <- sort(unique(df_clean$year_ranges))
-    cat("Available year ranges:", paste(unique_years), "\n")
     
     
     category_index <- length(unique_years) - round(y_click) + 1
-    cat("Category index:", category_index, "\n")
     
     if(category_index >= 1 && category_index <= length(unique_years)){
       selected_year_range <- unique_years[category_index]
-      cat("Selected year range:", selected_year_range, "\n")
       
       clicked_info(list(variable = "year_ranges", category= selected_year_range))
       
       filtered_df <- df_clean  %>% filter(year_ranges == selected_year_range)
       filtered_data(filtered_df)
-      cat("Filtered dataset now has", nrow(filtered_df), "rows\n")
     }
   })
   
   
   observeEvent(input$reset,{
-    filtered_data(data_list)
+    filtered_data(df_clean)
     clicked_info(list(variable=NULL, category=NULL))
     cat("Data reset to full dataset\n")
   })
   
-  df_hist <- reactive({filtered_data()[["df_clean"]]})
+  
+  
+  
+  
   
   
   # Bar chart for Box 1 (Education Groups)
-  education_levels <- c("3rd grade or less", 
-                        "4th to 7th grade", 
-                        "8th to 11th grade", 
-                        "12th to 3 yrs of college", 
-                        "4 to 7 yrs of college", 
-                        "8+ yrs of college")
+  education_levels <- c("Kindergarten", "Elementary School", 
+                        "High School", "College Degree", 
+                        "Bachelor's Degree", "Master's Degree", "Advanced Professional Degree")
   
   output$bar_educ <- renderPlot({
-    histogram_discrete(x = "educ", title = "Education Groups", df = df_hist(), levels=education_levels)
+    histogram_discrete(x = "educ", title = "Education Groups", df = filtered_data(), levels=education_levels)
   })
   
   # Bar chart for Box 2 (Happiness Groups)
   happiness_levels <- c("Not too happy", "Pretty happy", "Very happy")
   output$bar_happy <- renderPlot({
-    histogram_discrete(x = "happiness", title = "Happiness Groups", df = df_hist(), levels = happiness_levels)
+    histogram_discrete(x = "happiness", title = "Happiness Groups", df = filtered_data(), levels = happiness_levels)
   })
   
   # Bar chart for Box 3 (Race Groups)
   race_levels <- c("White", "Black", "Other")
   output$bar_race <- renderPlot({
-    histogram_discrete(x = "race", title = "Race Groups", df = df_hist(), levels=race_levels)
+    histogram_discrete(x = "race", title = "Race Groups", df = filtered_data(), levels=race_levels)
   })
   
   # Bar chart for Box 4 (Marital Groups)
+  marital_levels <- c("Married", "Widowed", "Divorced", "Sepreated", "Never married")
   output$bar_marital <- renderPlot({
-    histogram_discrete(x = "marital", title = "Marriage Type", df = filtered_data())
+    histogram_discrete(x = "marital", title = "Marriage Type", df = filtered_data(), levels=marital_levels)
   })
   
   # Bar chart for Box 5 (Work Group)
   work_levels <- c("Working full time", "Working part time", "Unemployed", "With a job, but home", 
                    "Retired", "In school", "Keeping house", "Other")
   output$bar_work <- renderPlot({
-    histogram_discrete(x = "work", title = "Working Classes", df = df_hist(), levels=work_levels)
+    histogram_discrete(x = "work", title = "Working Classes", df = filtered_data(), levels=work_levels)
   })
   
   # Bar chart for Age (continuous)
   output$bar_age <- renderPlot({
-    histogram_continuous(x = "age_ranges", title = "Age ranges", df = df_hist())
+    histogram_continuous(x = "age_ranges", title = "Age ranges", df = filtered_data())
   })
   
   # Bar chart for Year (continuous)
@@ -178,7 +174,7 @@ server <- function(input, output) {
                            df = df_clean, selected_category = current_click$category)
     } else{
       histogram_continuous(x = "year_ranges", title = "Year ranges", 
-                           df = df_hist())
+                           df = filtered_data())
     }
    
     })
@@ -190,9 +186,7 @@ server <- function(input, output) {
     variable <- switch(input$var,
                        "Happiness" = "happiness",
                        "Education" = "educ",
-                       "Marital Status" = "marital",
-                       "Race" = "race",
-                       "Work" = "work")
+                       "Marital Status" = "marital")
     
     levels_selected <- level_list[[variable]]
     n_rows <- length(levels_selected)
@@ -202,7 +196,7 @@ server <- function(input, output) {
     grid_css <- sprintf("
       display:grid;
       grid-template-columns: 60px repeat(%d, 1fr);
-      grid-template-rows: 40px repeat(%d, 185px); #40 px is the labels row
+      grid-template-rows: 40px repeat(%d, 180px); #40 px is the labels row
       gap: 5px;
       width: 100%%;
     ", n_cols, n_rows)
@@ -255,29 +249,21 @@ server <- function(input, output) {
       ),
       tags$div(
         style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold;",
-        tags$span("-50%"),
+        tags$span("-20%"),
         tags$span("0%"),
-        tags$span("50%")
+        tags$span("20%")
       )
     )
   })
   
-  df_clean <- df_clean
-  
   # Reactive rendering of all maps
-  
-  # Add this to see what's in your data
-  
   observe({
     variable <- switch(input$var,
                        "Happiness" = "happiness",
                        "Education" = "educ",
-                       "Marital Status" = "marital",
-                       "Race" = "race",
-                       "Work" = "work")
+                       "Marital Status" = "marital")
     
-    df_final <- function_filter(df_var = variable, df_data = data_list[[variable]], df_clean_filtered = df_clean)
-    
+    df_final <- function_filter(df_var = variable, df_data = data_list[[variable]])
     levels_selected <- level_list[[variable]]
     n_rows <- length(levels_selected)
     n_cols <- length(years)
