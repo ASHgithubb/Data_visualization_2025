@@ -11,7 +11,7 @@ source('functions.R')
 ui <- fluidPage(
   titlePanel("Interactive Visualization Project"),
   theme = bs_theme(version = 5),
-    selectInput(
+  selectInput(
     "var",
     "Choose a variable to display:",
     choices = c(
@@ -275,7 +275,9 @@ server <- function(input, output) {
     variable <- switch(input$var,
                        "Happiness" = "happiness",
                        "Education" = "educ",
-                       "Marital Status" = "marital")
+                       "Marital Status" = "marital",
+                       "Race" = "race",
+                       "Work" = "work")
     
     levels_selected <- level_list[[variable]]
     n_rows <- length(levels_selected)
@@ -285,7 +287,7 @@ server <- function(input, output) {
     grid_css <- sprintf("
       display:grid;
       grid-template-columns: 60px repeat(%d, 1fr);
-      grid-template-rows: 40px repeat(%d, 180px); #40 px is the labels row
+      grid-template-rows: 40px repeat(%d, 185px); #40 px is the labels row
       gap: 5px;
       width: 100%%;
     ", n_cols, n_rows)
@@ -338,9 +340,9 @@ server <- function(input, output) {
       ),
       tags$div(
         style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold;",
-        tags$span("-20%"),
+        tags$span("-50%"),
         tags$span("0%"),
-        tags$span("20%")
+        tags$span("50%")
       )
     )
   })
@@ -356,7 +358,6 @@ server <- function(input, output) {
     
     df_final <- function_filter(df_var = variable, df_data = data_list[[variable]], df_clean_filtered = filtered_data)
     
-    df_final <- function_filter(df_var = variable, df_data = data_list[[variable]])
     levels_selected <- level_list[[variable]]
     n_rows <- length(levels_selected)
     n_cols <- length(years)
@@ -382,6 +383,7 @@ server <- function(input, output) {
     })
   })
 }
+
 
 # ---- Run the App ----
 shinyApp(ui = ui, server = server)
