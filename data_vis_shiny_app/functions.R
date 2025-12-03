@@ -116,7 +116,10 @@ histogram_continuous <- function(x, title, df, selected_category = NULL) {
   # Add appropriate scale based on axis flip
   # After coord_flip(), the original x-axis becomes y-axis
   if (x %in% c("age_ranges", "year_ranges")) {
-    p <- p + scale_x_discrete(breaks = breaks, labels=scales::label_wrap(8))
+    p <- p + scale_x_discrete(breaks = breaks, labels=scales::label_wrap(8))+
+      theme(axis.text.x = element_text(size=9),
+        plot.title= element_text(size=20),
+        text = element_text(size=15))
  
   }
   
