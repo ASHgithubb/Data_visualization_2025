@@ -41,31 +41,31 @@ ui <- fluidPage(
           card(
             full_screen=TRUE,
             card_body(
-              plotOutput("bar_age")
+              plotOutput("bar_age", click = "bar_age_click")
             )
           ),
           card(
             full_screen=TRUE,
             card_body(
-              plotOutput("bar_happy")
+              plotOutput("bar_happy", click = "bar_happy_click")
             )
           ),
           card(
             full_screen=TRUE,
             card_body(
-                plotOutput("bar_educ")
+                plotOutput("bar_educ", click = "bar_educ_click")
             )
           ),
           card(
             full_screen=TRUE,
             card_body(
-              plotOutput("bar_race")
+              plotOutput("bar_race", click = "bar_race_click")
             )
           ),
           card(
             full_screen=TRUE,
             card_body(
-              plotOutput("bar_marital")
+              plotOutput("bar_marital", click = "bar_marital_click")
             )
           ),
           card(
@@ -95,12 +95,12 @@ server <- function(input, output) {
   clicked_info <- reactiveVal(list(variable = NULL, category=NULL))
   
   observeEvent(input$bar_year_click,{
-    y_click <- input$bar_year_click$y
-    
+    yr_click <- input$bar_year_click$y
+
     unique_years <- sort(unique(df_clean$year_ranges))
     
-    
-    category_index <- length(unique_years) - round(y_click) + 1
+  
+    category_index <- length(unique_years) - round(yr_click) + 1
     
     if(category_index >= 1 && category_index <= length(unique_years)){
       selected_year_range <- unique_years[category_index]
@@ -111,6 +111,101 @@ server <- function(input, output) {
       filtered_data(filtered_df)
     }
   })
+  
+  observeEvent(input$bar_age_click,{
+    age_click <- input$bar_age_click$y
+    
+    unique_age <- sort(unique(df_clean$age_ranges))
+    
+    
+    category_index <- length(unique_age) - round(age_click) + 1
+    
+    if(category_index >= 1 && category_index <= length(unique_age)){
+      selected_age_range <- unique_age[category_index]
+      
+      clicked_info(list(variable = "age_ranges", category= selected_age_range))
+      
+      filtered_df <- df_clean  %>% filter(age_ranges == selected_age_range)
+      filtered_data(filtered_df)
+    }
+  })
+  
+  
+  observeEvent(input$bar_happy_click,{
+    happy_click <- input$bar_happy_click$y
+    
+    unique_happy <- sort(unique(df_clean$happiness))
+    
+    
+    category_index <- length(unique_happy) - round(happy_click) + 1
+    
+    if(category_index >= 1 && category_index <= length(unique_happy)){
+      selected_happy <- unique_happy[category_index]
+      
+      clicked_info(list(variable = "happy", category= selected_happy))
+      
+      filtered_df <- df_clean  %>% filter(happiness == selected_happy)
+      filtered_data(filtered_df)
+    }
+  })
+  
+  observeEvent(input$bar_educ_click,{
+    educ_click <- input$bar_educ_click$y
+    
+    unique_educ <- sort(unique(df_clean$educ))
+    
+    
+    category_index <- length(unique_educ) - round(educ_click) + 1
+    
+    if(category_index >= 1 && category_index <= length(unique_educ)){
+      selected_educ_range <- unique_educ[category_index]
+      
+      clicked_info(list(variable = "educ", category= selected_educ_range))
+      
+      filtered_df <- df_clean  %>% filter(educ == selected_educ_range)
+      filtered_data(filtered_df)
+    }
+  })
+  
+  observeEvent(input$bar_race_click,{
+    race_click <- input$bar_race_click$y
+    
+    unique_race <- sort(unique(df_clean$race))
+    
+    
+    category_index <- length(unique_race) - round(race_click) + 1
+    
+    if(category_index >= 1 && category_index <= length(unique_race)){
+      selected_race_range <- unique_race[category_index]
+      
+      clicked_info(list(variable = "race", category= selected_race_range))
+      
+      filtered_df <- df_clean  %>% filter(race == selected_race_range)
+      filtered_data(filtered_df)
+    }
+  })
+  
+  
+  observeEvent(input$bar_marital_click,{
+    marital_click <- input$bar_marital_click$y
+    
+    unique_race <- sort(unique(df_clean$marital))
+    
+    
+    category_index <- length(unique_marital) - round(marital_click) + 1
+    
+    if(category_index >= 1 && category_index <= length(unique_marital)){
+      selected_marital_range <- unique_marital[category_index]
+      
+      clicked_info(list(variable = "marital", category= selected_marital_range))
+      
+      filtered_df <- df_clean  %>% filter(marital == selected_marital_range)
+      filtered_data(filtered_df)
+    }
+  })
+
+
+  
   
   
   observeEvent(input$reset,{
@@ -136,6 +231,7 @@ server <- function(input, output) {
   
   # Bar chart for Box 2 (Happiness Groups)
   happiness_levels <- c("Not too happy", "Pretty happy", "Very happy")
+  filtered_levels <- 
   output$bar_happy <- renderPlot({
     histogram_discrete(x = "happiness", title = "Happiness Groups", df = filtered_data(), levels = happiness_levels)
   })
