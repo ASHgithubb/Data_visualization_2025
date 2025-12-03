@@ -19,50 +19,15 @@ custom_colors <- c(
 # Create color palette 
 region_palette <- scale_fill_gradientn(
   colours = custom_colors,
-  limits = c(-52, 52),
+  limits = c(-20, 20),
   name = "Percent"
 )
 
-################## LOADING DATA ################################
+# Loading data
 df_happy <- read.csv("data_happy.csv", stringsAsFactors = FALSE)
 df_educ <- read.csv("data_educ.csv", stringsAsFactors = FALSE)
 df_marital <- read.csv("data_marital.csv", stringsAsFactors = FALSE)
 df_clean <- read.csv("df_clean.csv", stringsAsFactors = FALSE)
-
-years <- c("1970's","1980's","1990's","2000's","2010's","2020's")
-
-decades <- list(
-  "1970's" = 1970:1979,
-  "1980's" = 1980:1989,
-  "1990's" = 1990:1999,
-  "2000's" = 2000:2009,
-  "2010's" = 2010:2019,
-  "2020's" = 2020:2029
-)
-
-us_regions <- list(
-  "New England"        = c("CT","ME","MA","NH","RI","VT"),
-  "Middle Atlantic"    = c("NJ","NY","PA"),
-  "East North Central" = c("IL","IN","MI","OH","WI"),
-  "West North Central" = c("IA","KS","MN","MO","NE","ND","SD")
-)
-
-regions <- names(us_regions)
-
-happiness_levels <- c("Not too happy", "Pretty happy", "Very happy")
-educ_levels <- unique(df_educ$educ)
-marital_levels <- unique(df_marital$marital)
-race_levels <- unique(df_race$race)
-work_levels <- unique(df_work$work)
-
-
-level_list <- list(
-  happiness = happiness_levels,
-  educ      = educ_levels,
-  marital   = marital_levels,
-  race   = race_levels,
-  work   = work_levels
-)
 
 ################## HISTOGRAM PLOTS ################################
 
@@ -126,8 +91,8 @@ histogram_continuous <- function(x, title, df, selected_category = NULL) {
     group_by(sex, !!sym(x)) %>% 
     summarise(count = n(), .groups = "drop") %>% 
     group_by(sex) %>%
-    mutate(perc = count / sum(count) * 100) %>%
-    mutate(perc_diverging = ifelse(sex == "F", -perc, perc))
+    mutate(perc = count / sum(count) * 100)
+    #mutate(perc_diverging = ifelse(sex == "F", -perc, perc))
   
   if (!is.null(selected_category)) {
     df_processed <- df_processed  %>%
@@ -135,39 +100,69 @@ histogram_continuous <- function(x, title, df, selected_category = NULL) {
   } 
   
   p <- ggplot(df_processed,
-              aes(x = !!sym(x), y = perc_diverging, fill = sex)) + 
-    geom_col(position = "Identity") +
+              aes(x = !!sym(x), y = perc, fill = sex)) + 
+    geom_col(position = position_dodge(width = 0.9)) +
     #geom_hline(yintercept = 0, color = "black", linewidth = 0.5) +
     #theme(axis.text.y = element_text(angle = 90, vjust = 1, hjust = 1, size = 10)) +
     labs(x = title, y = "Percentage", title = title, fill = "Gender") +
     theme_minimal() +
-    scale_fill_manual(values= alpha(c("#d6665c","#2a94a7")))+
-    scale_y_continuous(
-      labels = function(x) abs(x),
-      limits = c(-10, 10)  
-    ) +
-    coord_flip()  #
+    scale_fill_manual(values= alpha(c("#d6665c","#2a94a7")))
+    #scale_y_continuous(
+      #labels = function(x) abs(x),
+    #  limits = c(0, 10)  
+    #)
+    #coord_flip()  #
   
   # Add appropriate scale based on axis flip
   # After coord_flip(), the original x-axis becomes y-axis
   if (x %in% c("age_ranges", "year_ranges")) {
-    p <- p + scale_x_discrete(breaks = breaks)+
-      theme(axis.text.y = element_text(size=9),
-            plot.title= element_text(size=20),
-            text = element_text(size=15)) 
+    p <- p + scale_x_discrete(breaks = breaks, labels=scales::label_wrap(8))+
+      theme(axis.text.x = element_text(size=9),
+        plot.title= element_text(size=20),
+        text = element_text(size=15))
+ 
   }
   
   return(p)
 }
 ################## MAP ################################
 
+years <- c("1970's","1980's","1990's","2000's","2010's","2020's")
+
+decades <- list(
+  "1970's" = 1970:1979,
+  "1980's" = 1980:1989,
+  "1990's" = 1990:1999,
+  "2000's" = 2000:2009,
+  "2010's" = 2010:2019,
+  "2020's" = 2020:2029
+)
+
+us_regions <- list(
+  "New England"        = c("CT","ME","MA","NH","RI","VT"),
+  "Middle Atlantic"    = c("NJ","NY","PA"),
+  "East North Central" = c("IL","IN","MI","OH","WI"),
+  "West North Central" = c("IA","KS","MN","MO","NE","ND","SD")
+)
+
+regions <- names(us_regions)
+
+happiness_levels <- c("Not too happy", "Pretty happy", "Very happy")
+educ_levels <- unique(df_educ$educ)
+marital_levels <- unique(df_marital$marital)
+
 data_list <- list(
   happiness = df_happy,
   educ      = df_educ,
-  marital   = df_marital,
-  race   = df_race,
-  work   = df_work
+  marital   = df_marital
 )
+
+level_list <- list(
+  happiness = happiness_levels,
+  educ      = educ_levels,
+  marital   = marital_levels
+)
+
 
 ################## lOADING MAP ################################
 # Load states as sf

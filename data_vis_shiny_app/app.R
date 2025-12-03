@@ -41,31 +41,31 @@ ui <- fluidPage(
           card(
             full_screen=TRUE,
             card_body(
-              plotOutput("bar_age")
+              plotOutput("bar_age", click = "bar_age_click")
             )
           ),
           card(
             full_screen=TRUE,
             card_body(
-              plotOutput("bar_happy")
+              plotOutput("bar_happy", click = "bar_happy_click")
             )
           ),
           card(
             full_screen=TRUE,
             card_body(
-                plotOutput("bar_educ")
+                plotOutput("bar_educ", click = "bar_educ_click")
             )
           ),
           card(
             full_screen=TRUE,
             card_body(
-              plotOutput("bar_race")
+              plotOutput("bar_race", click = "bar_race_click")
             )
           ),
           card(
             full_screen=TRUE,
             card_body(
-              plotOutput("bar_marital")
+              plotOutput("bar_marital", click = "bar_marital_click")
             )
           ),
           card(
@@ -95,43 +95,128 @@ server <- function(input, output) {
   clicked_info <- reactiveVal(list(variable = NULL, category=NULL))
   
   observeEvent(input$bar_year_click,{
-    y_click <- input$bar_year_click$y
-    cat("Y click position:", y_click, "\n")
-    
+    yr_click <- input$bar_year_click$y
+
     unique_years <- sort(unique(df_clean$year_ranges))
-    cat("Available year ranges:", paste(unique_years), "\n")
     
-    
-    category_index <- length(unique_years) - round(y_click) + 1
-    cat("Category index:", category_index, "\n")
+  
+    category_index <- length(unique_years) - round(yr_click) + 1
     
     if(category_index >= 1 && category_index <= length(unique_years)){
       selected_year_range <- unique_years[category_index]
-      cat("Selected year range:", selected_year_range, "\n")
       
       clicked_info(list(variable = "year_ranges", category= selected_year_range))
       
       filtered_df <- df_clean  %>% filter(year_ranges == selected_year_range)
       filtered_data(filtered_df)
-      cat("Filtered dataset now has", nrow(filtered_df), "rows\n")
     }
   })
   
+  observeEvent(input$bar_age_click,{
+    age_click <- input$bar_age_click$y
+    
+    unique_age <- sort(unique(df_clean$age_ranges))
+    
+    
+    category_index <- length(unique_age) - round(age_click) + 1
+    
+    if(category_index >= 1 && category_index <= length(unique_age)){
+      selected_age_range <- unique_age[category_index]
+      
+      clicked_info(list(variable = "age_ranges", category= selected_age_range))
+      
+      filtered_df <- df_clean  %>% filter(age_ranges == selected_age_range)
+      filtered_data(filtered_df)
+    }
+  })
+  
+  
+  observeEvent(input$bar_happy_click,{
+    happy_click <- input$bar_happy_click$y
+    
+    unique_happy <- sort(unique(df_clean$happiness))
+    
+    
+    category_index <- length(unique_happy) - round(happy_click) + 1
+    
+    if(category_index >= 1 && category_index <= length(unique_happy)){
+      selected_happy <- unique_happy[category_index]
+      
+      clicked_info(list(variable = "happy", category= selected_happy))
+      
+      filtered_df <- df_clean  %>% filter(happiness == selected_happy)
+      filtered_data(filtered_df)
+    }
+  })
+  
+  observeEvent(input$bar_educ_click,{
+    educ_click <- input$bar_educ_click$y
+    
+    unique_educ <- sort(unique(df_clean$educ))
+    
+    
+    category_index <- length(unique_educ) - round(educ_click) + 1
+    
+    if(category_index >= 1 && category_index <= length(unique_educ)){
+      selected_educ_range <- unique_educ[category_index]
+      
+      clicked_info(list(variable = "educ", category= selected_educ_range))
+      
+      filtered_df <- df_clean  %>% filter(educ == selected_educ_range)
+      filtered_data(filtered_df)
+    }
+  })
+  
+  observeEvent(input$bar_race_click,{
+    race_click <- input$bar_race_click$y
+    
+    unique_race <- sort(unique(df_clean$race))
+    
+    
+    category_index <- length(unique_race) - round(race_click) + 1
+    
+    if(category_index >= 1 && category_index <= length(unique_race)){
+      selected_race_range <- unique_race[category_index]
+      
+      clicked_info(list(variable = "race", category= selected_race_range))
+      
+      filtered_df <- df_clean  %>% filter(race == selected_race_range)
+      filtered_data(filtered_df)
+    }
+  })
+  
+  
+  observeEvent(input$bar_marital_click,{
+    marital_click <- input$bar_marital_click$y
+    
+    unique_race <- sort(unique(df_clean$marital))
+    
+    
+    category_index <- length(unique_marital) - round(marital_click) + 1
+    
+    if(category_index >= 1 && category_index <= length(unique_marital)){
+      selected_marital_range <- unique_marital[category_index]
+      
+      clicked_info(list(variable = "marital", category= selected_marital_range))
+      
+      filtered_df <- df_clean  %>% filter(marital == selected_marital_range)
+      filtered_data(filtered_df)
+    }
+  })
+
+
   
   observeEvent(input$reset,{
     filtered_data(df_clean)
     clicked_info(list(variable=NULL, category=NULL))
     cat("Data reset to full dataset\n")
   })
-  
+    
   
   # Bar chart for Box 1 (Education Groups)
-  education_levels <- c("3rd grade or less", 
-                        "4th to 7th grade", 
-                        "8th to 11th grade", 
-                        "12th to 3 yrs of college", 
-                        "4 to 7 yrs of college", 
-                        "8+ yrs of college")
+  education_levels <- c("Kindergarten", "Elementary School", 
+                        "High School", "College Degree", 
+                        "Bachelor's Degree", "Master's Degree", "Advanced Professional Degree")
   
   output$bar_educ <- renderPlot({
     histogram_discrete(x = "educ", title = "Education Groups", df = filtered_data(), levels=education_levels)
@@ -139,6 +224,7 @@ server <- function(input, output) {
   
   # Bar chart for Box 2 (Happiness Groups)
   happiness_levels <- c("Not too happy", "Pretty happy", "Very happy")
+  filtered_levels <- 
   output$bar_happy <- renderPlot({
     histogram_discrete(x = "happiness", title = "Happiness Groups", df = filtered_data(), levels = happiness_levels)
   })
@@ -150,8 +236,9 @@ server <- function(input, output) {
   })
   
   # Bar chart for Box 4 (Marital Groups)
+  marital_levels <- c("Married", "Widowed", "Divorced", "Sepreated", "Never married")
   output$bar_marital <- renderPlot({
-    histogram_discrete(x = "marital", title = "Marriage Type", df = filtered_data())
+    histogram_discrete(x = "marital", title = "Marriage Type", df = filtered_data(), levels=marital_levels)
   })
   
   # Bar chart for Box 5 (Work Group)
@@ -188,9 +275,7 @@ server <- function(input, output) {
     variable <- switch(input$var,
                        "Happiness" = "happiness",
                        "Education" = "educ",
-                       "Marital Status" = "marital",
-                       "Race" = "race",
-                       "Work" = "work")
+                       "Marital Status" = "marital")
     
     levels_selected <- level_list[[variable]]
     n_rows <- length(levels_selected)
@@ -200,7 +285,7 @@ server <- function(input, output) {
     grid_css <- sprintf("
       display:grid;
       grid-template-columns: 60px repeat(%d, 1fr);
-      grid-template-rows: 40px repeat(%d, 185px); #40 px is the labels row
+      grid-template-rows: 40px repeat(%d, 180px); #40 px is the labels row
       gap: 5px;
       width: 100%%;
     ", n_cols, n_rows)
@@ -253,9 +338,9 @@ server <- function(input, output) {
       ),
       tags$div(
         style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold;",
-        tags$span("-50%"),
+        tags$span("-20%"),
         tags$span("0%"),
-        tags$span("50%")
+        tags$span("20%")
       )
     )
   })
@@ -271,6 +356,7 @@ server <- function(input, output) {
     
     df_final <- function_filter(df_var = variable, df_data = data_list[[variable]], df_clean_filtered = filtered_data)
     
+    df_final <- function_filter(df_var = variable, df_data = data_list[[variable]])
     levels_selected <- level_list[[variable]]
     n_rows <- length(levels_selected)
     n_cols <- length(years)
