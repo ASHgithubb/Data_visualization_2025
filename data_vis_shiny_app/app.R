@@ -260,6 +260,8 @@ server <- function(input, output) {
     )
   })
   
+  df_clean <- df_clean
+  
   # Reactive rendering of all maps
   observe({
     variable <- switch(input$var,
@@ -269,13 +271,8 @@ server <- function(input, output) {
                        "Race" = "race",
                        "Work" = "work")
     
-    current_click <- clicked_info()
+    df_final <- function_filter(df_var = variable, df_data = data_list[[variable]], df_clean_filtered = df_clean)
     
-    if (!is.null(current_click$variable) && !is.null(current_click$category)){
-      df_final <- function_filter(df_var = variable, df_data = data_list[[variable]], var_filter=current_click$variable, cat_filter=current_click$category)
-    } else {
-      df_final <- function_filter(df_var = variable, df_data = data_list[[variable]])
-    }
     levels_selected <- level_list[[variable]]
     n_rows <- length(levels_selected)
     n_cols <- length(years)

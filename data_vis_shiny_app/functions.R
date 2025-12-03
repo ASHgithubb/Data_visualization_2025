@@ -201,7 +201,7 @@ sf::sf_use_s2(TRUE)
 
 
 ################## FILTER FUNCTION ################################
-function_filter <- function(df_var, df_data, var_filter=NULL, cat_filter=NULL) {
+function_filter <- function(df_var, df_data, cat_filter=NULL, df_clean_filtered) {
   
   df_sym <- sym(df_var)
   
@@ -212,12 +212,8 @@ function_filter <- function(df_var, df_data, var_filter=NULL, cat_filter=NULL) {
       map_dfr(
         regions,
         \(reg) {
-          df_clean %>%
+          df_clean_filtered %>%
             filter(
-              if (!is.null(var_filter) && var_filter == "year_ranges"){
-                year == cat_filter 
-              }
-              else TRUE,
               year %in% decades[[decade]], region == reg) %>%
             group_by(sex, !!df_sym) %>%
             summarise(count = n(), .groups = "drop") %>%
