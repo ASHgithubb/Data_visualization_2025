@@ -260,8 +260,6 @@ server <- function(input, output) {
     )
   })
   
-  df_clean <- df_clean
-  
   # Reactive rendering of all maps
   observe({
     variable <- switch(input$var,
@@ -271,7 +269,7 @@ server <- function(input, output) {
                        "Race" = "race",
                        "Work" = "work")
     
-    df_final <- function_filter(df_var = variable, df_data = data_list[[variable]], df_clean_filtered = df_clean)
+    df_final <- function_filter(df_var = variable, df_data = data_list[[variable]], df_clean_filtered = filtered_data)
     
     levels_selected <- level_list[[variable]]
     n_rows <- length(levels_selected)

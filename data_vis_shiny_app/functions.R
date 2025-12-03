@@ -205,6 +205,8 @@ function_filter <- function(df_var, df_data, cat_filter=NULL, df_clean_filtered)
   
   df_sym <- sym(df_var)
   
+  df_clean_filtered <- df_clean_filtered()
+  
   # Aggregate data for each decade and region
   df_simple <- map_dfr(
     names(decades),
