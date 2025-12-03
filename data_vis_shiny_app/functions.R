@@ -195,6 +195,54 @@ map_data_gg <- states_map_sf %>%
 sf::sf_use_s2(TRUE)
 
 
+################## FILTER FUNCTION ################################
+function_filter <- function(df_var, df_data, cat_filter=NULL, df_clean_filtered) {
+  
+  df_sym <- sym(df_var)
+  
+  df_clean_filtered <- df_clean_filtered()
+  
+  # Aggregate data for each decade and region
+  df_simple <- map_dfr(
+    names(decades),
+    \(decade) {
+      map_dfr(
+        regions,
+        \(reg) {
+          df_clean_filtered %>%
+            filter(
+              year %in% decades[[decade]], region == reg) %>%
+            group_by(sex, !!df_sym) %>%
+            summarise(count = n(), .groups = "drop") %>%
+            group_by(sex) %>%
+            mutate(
+              perc   = count / sum(count) * 100,
+              region = reg,
+              year   = decade
+            )
+        }
+      )
+    }
+  )
+  
+  # Merge with external data and compute difference
+  df_all <- df_data %>%
+    left_join(df_simple, by = c("sex", df_var, "region", "year")) %>%
+    mutate(
+      count = replace_na(count, 0),
+      perc  = replace_na(perc, 0)
+    ) %>%
+    arrange(year, region, sex, !!df_sym)
+  
+  df_all %>%
+    select(-count) %>%
+    pivot_wider(names_from = sex, values_from = perc) %>%
+    mutate(percent = F - M)
+}
+
+
+
+
 ### MAP PLOT FUNCTION --> DESIGN MAPS HERE ################################
 
 #creates an interactive choropleth map using ggplot2 and ggiraph
@@ -243,47 +291,5 @@ plot_map_ggiraph <- function(map_df) {
                     cursor:pointer;") #cursor changes to pointer (like a button)
     )
   )
-}
-
-################## FILTER FUNCTION ################################
-function_filter <- function(df_var, df_data) {
-  
-  df_sym <- sym(df_var)
-  
-  # Aggregate data for each decade and region
-  df_simple <- map_dfr(
-    names(decades),
-    \(decade) {
-      map_dfr(
-        regions,
-        \(reg) {
-          df_clean %>%
-            filter(year %in% decades[[decade]], region == reg) %>%
-            group_by(sex, !!df_sym) %>%
-            summarise(count = n(), .groups = "drop") %>%
-            group_by(sex) %>%
-            mutate(
-              perc   = count / sum(count) * 100,
-              region = reg,
-              year   = decade
-            )
-        }
-      )
-    }
-  )
-  
-  # Merge with external data and compute difference
-  df_all <- df_data %>%
-    left_join(df_simple, by = c("sex", df_var, "region", "year")) %>%
-    mutate(
-      count = replace_na(count, 0),
-      perc  = replace_na(perc, 0)
-    ) %>%
-    arrange(year, region, sex, !!df_sym)
-  
-  df_all %>%
-    select(-count) %>%
-    pivot_wider(names_from = sex, values_from = perc) %>%
-    mutate(percent = F - M)
 }
 

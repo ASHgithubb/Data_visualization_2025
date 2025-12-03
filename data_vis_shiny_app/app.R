@@ -206,19 +206,12 @@ server <- function(input, output) {
 
 
   
-  
-  
   observeEvent(input$reset,{
     filtered_data(df_clean)
     clicked_info(list(variable=NULL, category=NULL))
     cat("Data reset to full dataset\n")
   })
-  
-  
-  
-  
-  
-  
+    
   
   # Bar chart for Box 1 (Education Groups)
   education_levels <- c("Kindergarten", "Elementary School", 
@@ -357,7 +350,11 @@ server <- function(input, output) {
     variable <- switch(input$var,
                        "Happiness" = "happiness",
                        "Education" = "educ",
-                       "Marital Status" = "marital")
+                       "Marital Status" = "marital",
+                       "Race" = "race",
+                       "Work" = "work")
+    
+    df_final <- function_filter(df_var = variable, df_data = data_list[[variable]], df_clean_filtered = filtered_data)
     
     df_final <- function_filter(df_var = variable, df_data = data_list[[variable]])
     levels_selected <- level_list[[variable]]
