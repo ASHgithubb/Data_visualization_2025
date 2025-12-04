@@ -52,9 +52,9 @@ regions <- names(us_regions)
 
 happiness_levels <- c("Not too happy", "Pretty happy", "Very happy")
 educ_levels <- c("Elementary School", "High School", "College Degree", "Bachelor's Degree", "Master's Degree", "Advanced Professional Degree")
-marital_levels <- c("Never married", "Married", "Widowed", "Divorced", "Seperated")
+marital_levels <- c("Married", "Never married", "Divorced", "Widowed", "Seperated")
 race_levels <- c("White", "Black", "Other")
-work_levels <- c("In school", "Working full time", "Working part time", "With a job, but home", "Keeping house", "Unemployed", "Retired", "Other")
+work_levels <- c("Other", "With a job, but home", "In school", "Unemployed", "Keeping house", "Working part time", "Retired", "Working full time")
 
 unique(df_clean$educ)
 
@@ -69,61 +69,48 @@ level_list <- list(
 ################## HISTOGRAM PLOTS ################################
 
 # Discrete values
-histogram_discrete <- function(x, title, df, adjust_label=TRUE, flip=FALSE, levels=NULL) {
+histogram_discrete <- function(x, title, df, levels=NULL, flip = FALSE) {
+  df_processed <- df %>%
+    group_by(sex, !!sym(x)) %>% 
+    summarise(count = n(), .groups = "drop") %>% 
+    group_by(sex) %>% 
+    mutate(perc = count / sum(count) * 100)
+  
   if(!any(is.na(levels))){
-    df_processed <- df %>%
-      group_by(sex, !!sym(x)) %>% 
-      summarise(count = n(), .groups = "drop") %>% 
-      group_by(sex) %>% 
-      mutate(perc = count / sum(count) * 100) %>% 
+    df_processed <- df_processed %>% 
       mutate(!!sym(x):= factor(!!(sym(x)), levels = levels))
   }
-  
-  else{
-    df_processed <- df %>%
-      group_by(sex, !!sym(x)) %>% 
-      summarise(count = n(), .groups = "drop") %>% 
-      group_by(sex) %>% 
-      mutate(perc = count / sum(count) * 100)
-  }
-  
   
   p <- ggplot(df_processed,
               aes(x = !!sym(x), y = perc, fill = sex)) + 
     geom_col(position = position_dodge(width = 0.9)) +
     labs(x = x, y = "Percentage", title = title, fill = "Gender")+
     scale_fill_manual(values= alpha(c("#d6665c","#2a94a7")))+
-    theme_minimal()
-  if (flip) {
-    p <- p + coord_flip(ylim = c(0, 100)) 
-    + theme(axis.text.y = element_text(size = 10)) 
-  } else {
-    p <- p + coord_cartesian(ylim = c(0, 100))
-    if (adjust_label) {
-      p <- p  + scale_x_discrete(labels=scales::label_wrap(8))+
-        theme(axis.text.x = element_text(size=9),
+    theme_minimal() + 
+    coord_cartesian(ylim = c(0, 100))+
+        theme(axis.text.x = element_text(size=12),
+              axis.text.y = element_text(size=12),
               plot.title= element_text(size=20),
               text = element_text(size=15))
-        #theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust = .95))
-    }
+  
+  if (flip == TRUE) {
+    p <- p + coord_flip() + 
+      scale_x_discrete(labels=scales::label_wrap(15))
+  } else {
+    p <- p + scale_x_discrete(labels=scales::label_wrap(8))
   }
-    
   return(p)
 }
 
 
 
-histogram_continuous <- function(x, title, df) {
+histogram_continuous <- function(x, title, df, flip = FALSE) {
   # Determine breaks based on x variable
   if (x == "age_ranges") {
     breaks <- unique(df$age_ranges)
   } else if (x == "year_ranges") {
     breaks <- unique(df$year_ranges)
-  } else {
-    # Default case for other continuous variables
-    breaks <- waiver()  # Let ggplot choose breaks
   }
-  
   df_processed <- df %>%
     group_by(sex, !!sym(x)) %>% 
     summarise(count = n(), .groups = "drop") %>% 
@@ -135,13 +122,17 @@ histogram_continuous <- function(x, title, df) {
     geom_col(position = position_dodge(width = 0.9)) +
     labs(x = title, y = "Percentage", title = title, fill = "Gender") +
     theme_minimal() +
-    scale_fill_manual(values= alpha(c("#d6665c","#2a94a7")))
-  if (x %in% c("age_ranges", "year_ranges")) {
-    p <- p + scale_x_discrete(breaks = breaks, labels=scales::label_wrap(8))+
-      theme(axis.text.x = element_text(size=9),
-        plot.title= element_text(size=20),
-        text = element_text(size=15))
- 
+    scale_fill_manual(values= alpha(c("#d6665c","#2a94a7")))+
+      theme(axis.text.x = element_text(size=12),
+            axis.text.y = element_text(size=12),
+            plot.title= element_text(size=20),
+            text = element_text(size=15)) +
+     
+      coord_cartesian(ylim = c(0, 100))
+  
+  if (flip == TRUE){
+    p <- p + coord_flip()+
+      scale_x_discrete(breaks = breaks, labels=scales::label_wrap(15))
   }
   
   return(p)

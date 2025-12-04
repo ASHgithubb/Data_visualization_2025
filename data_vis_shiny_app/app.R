@@ -108,12 +108,12 @@ server <- function(input, output) {
   
   # Bar chart for Box 5 (Work Group)
   output$bar_work <- renderPlot({
-    histogram_discrete(x = "work", title = "Working Classes", df = df_clean, levels=work_levels)
+    histogram_discrete(x = "work", title = "Working Classes", df = df_clean, levels=work_levels, flip = TRUE)
   })
   
   # Bar chart for Age (continuous)
   output$bar_age <- renderPlot({
-    histogram_continuous(x = "age_ranges", title = "Age ranges", df = df_clean)
+    histogram_continuous(x = "age_ranges", title = "Age ranges", df = df_clean, flip = TRUE)
   })
   
   # Bar chart for Year (continuous)
