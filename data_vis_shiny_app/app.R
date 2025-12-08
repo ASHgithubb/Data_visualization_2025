@@ -29,43 +29,36 @@ ui <- fluidPage(
         style = "overflow-x:scroll",
         splitLayout(
           card(
-            full_screen=TRUE,
             card_body(
               plotOutput("bar_year")
             )
           ),
           card(
-            full_screen=TRUE,
             card_body(
               plotOutput("bar_age")
             )
           ),
           card(
-            full_screen=TRUE,
             card_body(
               plotOutput("bar_happy")
             )
           ),
           card(
-            full_screen=TRUE,
             card_body(
                 plotOutput("bar_educ")
             )
           ),
           card(
-            full_screen=TRUE,
             card_body(
               plotOutput("bar_race")
             )
           ),
           card(
-            full_screen=TRUE,
             card_body(
               plotOutput("bar_marital")
             )
           ),
           card(
-            full_screen=TRUE,
             card_body(
                 plotOutput("bar_work")
             )
