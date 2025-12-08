@@ -15,7 +15,6 @@ ui <- fluidPage(
     choices = c(
       "Happiness",
       "Education",
-      "Race",
       "Marital Status",
       "Work"
     )
@@ -122,7 +121,6 @@ server <- function(input, output) {
                        "Happiness" = "happiness",
                        "Education" = "educ",
                        "Marital Status" = "marital",
-                       "Race" = "race",
                        "Work" = "work")
     
     levels_selected <- level_list[[variable]]
