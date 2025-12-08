@@ -87,7 +87,6 @@ histogram_discrete <- function(x, title, df, levels=NULL, flip = FALSE) {
     labs(x = x, y = "Percentage", title = title, fill = "Gender")+
     scale_fill_manual(values= alpha(c("#d6665c","#2a94a7")))+
     theme_minimal() + 
-    coord_cartesian(ylim = c(0, 100))+
         theme(axis.text.x = element_text(size=12),
               axis.text.y = element_text(size=12),
               plot.title= element_text(size=20),
@@ -126,9 +125,7 @@ histogram_continuous <- function(x, title, df, flip = FALSE) {
       theme(axis.text.x = element_text(size=12),
             axis.text.y = element_text(size=12),
             plot.title= element_text(size=20),
-            text = element_text(size=15)) +
-     
-      coord_cartesian(ylim = c(0, 100))
+            text = element_text(size=15)) 
   
   if (flip == TRUE){
     p <- p + coord_flip()+
