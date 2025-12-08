@@ -24,7 +24,7 @@ ui <- fluidPage(
   accordion(
     open = TRUE,
     accordion_panel(
-      title = "Histograms",
+      title = "Distribution of variables",
       wellPanel(
         style = "overflow-x:scroll",
         splitLayout(
