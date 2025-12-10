@@ -260,6 +260,8 @@ plot_map_ggiraph <- function(map_df) {
   girafe(
     ggobj = gg,
     options = list(
+      opts_selection(type = "none"),
+      opts_toolbar(saveaspng = FALSE),
       opts_hover(css = #when hovering
                    "
                    #fill:rgba(211,211,211,0.8);  #region color when hovering
