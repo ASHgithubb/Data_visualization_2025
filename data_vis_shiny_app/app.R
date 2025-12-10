@@ -184,9 +184,9 @@ server <- function(input, output) {
       ),
       tags$div(
         style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold;",
-        tags$span("-50%"),
+        tags$span("50% more male"),
         tags$span("0%"),
-        tags$span("50%")
+        tags$span("50% more female")
       )
     )
   })
