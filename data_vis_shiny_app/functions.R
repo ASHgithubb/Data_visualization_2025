@@ -63,7 +63,7 @@ level_list <- list(
   educ      = educ_levels,
   marital   = marital_levels,
   race   = race_levels,
-  work   = work_levels
+  work   = rev(work_levels)
 )
 
 ################## HISTOGRAM PLOTS ################################

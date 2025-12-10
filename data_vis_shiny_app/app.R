@@ -142,7 +142,7 @@ server <- function(input, output) {
       # Column labels
       lapply(seq_along(years), function(j) {
         div(
-          style = paste0("grid-column:", j+1, "; grid-row:1; text-align:center; font-size:15px; font-weight:bold;"),
+          style = paste0("grid-column:", j+1, "; grid-row:1; text-align:center; font-size:15px; font-weight:bold; justify-content:center; align-items:center;"),
           years[j]
         )
       }),
@@ -152,7 +152,7 @@ server <- function(input, output) {
         div(
           style = paste0(
             "grid-column:1; grid-row:", i+1, ";",
-            "writing-mode:vertical-rl; transform:rotate(180deg); font-size:15px; font-weight:bold;"
+            "writing-mode:vertical-rl; transform:rotate(180deg); font-size:15px; font-weight:bold; justify-content:center; align-items:center;"
           ),
           levels_selected[i]
         )
