@@ -39,17 +39,17 @@ ui <- fluidPage(
           ),
           card(
             card_body(
+              plotOutput("bar_race")
+            )
+          ),
+          card(
+            card_body(
               plotOutput("bar_happy")
             )
           ),
           card(
             card_body(
                 plotOutput("bar_educ")
-            )
-          ),
-          card(
-            card_body(
-              plotOutput("bar_race")
             )
           ),
           card(
