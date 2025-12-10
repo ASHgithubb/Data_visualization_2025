@@ -7,7 +7,7 @@ source('functions.R')
 
 # ---- Define UI ----
 ui <- fluidPage(
-  titlePanel("Interactive Visualization Project"),
+  titlePanel("Exploring Gender Differences"),
   theme = bs_theme(version = 5),
   selectInput(
     "var",
@@ -173,20 +173,77 @@ server <- function(input, output) {
   # Render shared legend
   output$legend <- renderUI({
     div(
-      style="width:300px; background:white; padding:10px; border:1px solid #ccc; border-radius:5px;",
-      tags$h4("Difference in percent"),
+      style="
+      width:400px; 
+      background:white; 
+      padding:10px;  
+      border-radius:5px;
+      text-align:center;
+    ",
+      
+      tags$h4("Gender difference in percent"),
+      
+      # ROW 1: left label, color bar, right label
       tags$div(
-        style = paste0(
-          "height:20px; background:linear-gradient(to right, ",
-          paste(custom_colors, collapse = ","),
-          "); border:1px solid #000; margin-bottom:4px;"
+        style="
+        display:grid;
+        grid-template-columns: auto 1fr auto;
+        column-gap:8px;
+        margin-bottom:2px;   /* reduce vertical gap between rows */
+        align-items: center    /* align top of cells */
+      ",
+        
+        # left top label
+        tags$div(
+          "50% more males",
+          style="font-size:12px; font-weight:bold; text-align:center; word-break: break-word; overflow-wrap: break-word; max-width: 10ch;"
+        ),
+        
+        # color bar
+        tags$div(
+          style = paste0(
+            "height:20px; 
+           background:linear-gradient(to right, ",
+            paste(custom_colors, collapse = ","),
+            "); 
+           border:1px solid #000;
+            "
+          )
+        ),
+        
+        # right top label
+        tags$div(
+          "50% more females",
+          style="font-size:12px; font-weight:bold; text-align:center; word-break: break-word; overflow-wrap: break-word; max-width: 10ch;"
         )
       ),
+      
+      # ROW 2: left bottom label, middle label, right bottom label
       tags$div(
-        style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold;",
-        tags$span("50% more male"),
-        tags$span("0%"),
-        tags$span("50% more female")
+        style="
+        display:grid;
+        grid-template-columns: auto 1fr auto;
+        column-gap:8px;
+        align-items:start;    /* align top of cells so close to row 1 */
+      ",
+        
+        # left bottom label
+        tags$div(
+          "",
+          style="font-size:12px; font-weight:bold; text-align:center;"
+        ),
+        
+        # middle bottom label
+        tags$div(
+          "0% difference",
+          style="text-align:center; font-size:12px; font-weight:bold;"
+        ),
+        
+        # right bottom label
+        tags$div(
+          "",
+          style="font-size:12px; font-weight:bold; text-align:center;"
+        )
       )
     )
   })
